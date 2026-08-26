@@ -1,6981 +1,1669 @@
 <!DOCTYPE html>
+<!--
+  MY TUESDAY — 5 Tahun dari Sekarang
+  ------------------------------------------------
+  Aplikasi single-file (HTML + CSS + JS) berisi 18 folder pertanyaan
+  refleksi diri. Semua jawaban disimpan di localStorage browser dan
+  bisa diekspor menjadi cerita PDF atau file backup JSON.
+
+  Struktur file ini:
+    1. Bagian STYLE  — CSS, dibagi per bagian (lihat komentar /* ... */)
+    2. Bagian BODY   — 3 wadah kosong yang diisi oleh JavaScript:
+                       #homeView (halaman utama), #detailView (halaman
+                       detail per folder), #printSheet (versi cetak/PDF)
+    3. Bagian SCRIPT — JS, dibagi per bagian (lihat komentar // ...)
+-->
+
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>My Tuesday — Kehidupan yang Sedang Aku Bangun</title>
-
+<title>My Tuesday — 5 Tahun dari Sekarang</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-
 <style>
-:root{
-  --paper:#F6F1EA;
-  --paper-soft:#FBF8F4;
-  --ink:#2D2438;
-  --ink-mute:#7A7086;
-  --line:#E4DACB;
-
-  --c0:#E4A339;
-  --c1:#C65A6B;
-  --c2:#8B4B6B;
-  --c3:#3D3466;
-
-  --accent:#C65A6B;
-  --accent-soft:#C65A6B22;
-
-  --shadow:
-    0 1px 2px rgba(45,36,56,.04),
-    0 6px 20px rgba(45,36,56,.06);
+/* ====================================================================
+ * VARIABEL WARNA & RESET DASAR
+ ==================================================================== */
+:root {
+  --paper: #F6F1EA;
+  --paper-soft: #FBF8F4;
+  --ink: #2D2438;
+  --ink-mute: #7A7086;
+  --line: #E4DACB;
+  --accent: #C65A6B;
+  --accent-soft: #C65A6B22
 }
 
-*{
-  box-sizing:border-box;
+* {
+  box-sizing: border-box
 }
 
 html,
-body{
-  margin:0;
-  padding:0;
+body {
+  margin: 0;
+  padding: 0
 }
 
-body{
-  background:var(--paper);
-  color:var(--ink);
-  font-family:'Karla',sans-serif;
-  -webkit-tap-highlight-color:transparent;
-  min-height:100vh;
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Karla, sans-serif;
+  -webkit-tap-highlight-color: transparent
 }
 
 input,
 textarea,
-button{
-  font-family:inherit;
-}
-
-button{
-  -webkit-appearance:none;
-}
-
-.app{
-  max-width:560px;
-  margin:0 auto;
-  min-height:100vh;
-  position:relative;
-  padding-bottom:56px;
-}
-
-/* =========================================================
-   HOME
-========================================================= */
-
-.home-hero{
-  padding:38px 22px 22px;
-  position:relative;
-  overflow:hidden;
-}
-
-.home-hero::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(
-    180deg,
-    #FBF8F4 0%,
-    var(--paper) 100%
-  );
-  z-index:-1;
+button {
+  font-family: inherit
 }
 
-.eyebrow{
-  font-size:11px;
-  letter-spacing:.16em;
-  text-transform:uppercase;
-  color:var(--ink-mute);
-  font-weight:600;
-  margin:0 0 10px;
-}
-
-.hero-title{
-  font-family:'Fraunces',serif;
-  font-weight:600;
-  font-size:40px;
-  line-height:1.02;
-  margin:0 0 6px;
-  letter-spacing:-.01em;
-}
-
-.hero-sub{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-weight:500;
-  font-size:16px;
-  color:var(--ink-mute);
-  margin:0 0 18px;
-  line-height:1.4;
+.app {
+  max-width: 560px;
+  margin: auto;
+  min-height: 100vh;
+  padding-bottom: 50px
 }
-
-.hero-quote{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-size:14.5px;
-  line-height:1.6;
-  color:var(--ink);
-  border-left:2px solid var(--accent);
-  padding-left:14px;
-  margin:0 0 20px;
-}
-
-.hero-quote span{
-  display:block;
-  color:var(--ink-mute);
-}
-
-.progress-row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:4px;
-}
-
-.progress-track{
-  flex:1;
-  height:5px;
-  border-radius:4px;
-  background:var(--line);
-  overflow:hidden;
-}
-
-.progress-fill{
-  height:100%;
-  border-radius:4px;
-  background:
-    linear-gradient(
-      90deg,
-      var(--c0),
-      var(--c1),
-      var(--c2),
-      var(--c3)
-    );
-  width:0%;
-  transition:width .5s ease;
-}
-
-.progress-label{
-  font-size:12px;
-  color:var(--ink-mute);
-  font-weight:600;
-  white-space:nowrap;
-}
-
-.arc-strip{
-  display:flex;
-  gap:3px;
-  padding:0 22px 6px;
-  margin-top:14px;
-}
-
-.arc-dot{
-  flex:1;
-  height:4px;
-  border-radius:3px;
-  opacity:.55;
-}
-
-.folder-list{
-  padding:6px 16px 30px;
-}
-
-.folder-card{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  background:var(--paper-soft);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:14px 16px;
-  margin-bottom:10px;
-  cursor:pointer;
-  position:relative;
-  overflow:hidden;
-  transition:
-    transform .15s ease,
-    box-shadow .15s ease;
-}
-
-.folder-card:hover{
-  box-shadow:var(--shadow);
-}
-
-.folder-card:active{
-  transform:scale(.985);
-}
 
-.folder-card::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:0;
-  bottom:0;
-  width:4px;
-  background:var(--accent);
-}
-
-.folder-num{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-weight:500;
-  font-size:26px;
-  color:var(--accent);
-  min-width:40px;
-  flex-shrink:0;
-}
-
-.folder-body{
-  flex:1;
-  min-width:0;
-}
-
-.folder-title{
-  font-family:'Fraunces',serif;
-  font-weight:600;
-  font-size:15.5px;
-  line-height:1.25;
-  margin:0 0 3px;
-}
-
-.folder-sub{
-  font-size:12px;
-  color:var(--ink-mute);
-  margin:0 0 8px;
-  line-height:1.35;
-}
 
-.folder-progress{
-  height:3px;
-  background:var(--line);
-  border-radius:3px;
-  overflow:hidden;
+/* ====================================================================
+ * HALAMAN UTAMA — Hero, Progress Bar & Daftar Folder
+ ==================================================================== */
+.home-hero {
+  padding: 38px 22px 22px;
+  background: linear-gradient(180deg, #FBF8F4, var(--paper))
 }
 
-.folder-progress i{
-  display:block;
-  height:100%;
-  background:var(--accent);
-  width:0%;
-  transition:width .4s ease;
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 700;
+  margin: 0 0 10px
 }
 
-.folder-chev{
-  color:var(--ink-mute);
-  font-size:18px;
-  flex-shrink:0;
+.hero-title,
+.detail-title {
+  font-family: Fraunces, serif;
+  font-weight: 600;
+  letter-spacing: -.01em
 }
 
-.folder-photo-badge{
-  font-size:10.5px;
-  color:var(--accent);
-  font-weight:700;
-  margin-left:6px;
+.hero-title {
+  font-size: 40px;
+  line-height: 1.02;
+  margin: 0 0 6px
 }
 
-.backup-row{
-  display:flex;
-  gap:10px;
-  padding:0 22px;
-  margin-top:4px;
+.hero-sub {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  color: var(--ink-mute);
+  margin: 0 0 18px
 }
 
-.backup-btn{
-  flex:1;
-  padding:11px 10px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:var(--paper-soft);
-  color:var(--ink);
-  font-size:12.5px;
-  font-weight:600;
-  cursor:pointer;
-}
-
-.backup-btn:active{
-  transform:scale(.98);
-}
-
-#importFile{
-  display:none;
-}
-
-.privacy-note{
-  font-size:11px;
-  color:var(--ink-mute);
-  text-align:center;
-  padding:12px 30px 0;
-  line-height:1.5;
-  margin:0;
-}
-
-.pdf-row{
-  padding:0 22px;
-  margin-top:10px;
-}
-
-.pdf-btn{
-  width:100%;
-  padding:13px 10px;
-  border-radius:12px;
-  border:none;
-  background:var(--ink);
-  color:var(--paper-soft);
-  font-size:13.5px;
-  font-weight:700;
-  cursor:pointer;
-  letter-spacing:.01em;
-}
-
-.pdf-btn:active{
-  transform:scale(.98);
+.hero-quote {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 14.5px;
+  line-height: 1.6;
+  border-left: 2px solid var(--accent);
+  padding-left: 14px;
+  margin: 0
 }
 
-.home-footer{
-  text-align:center;
-  padding:20px 30px 40px;
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-size:13.5px;
-  color:var(--ink-mute);
-  line-height:1.6;
+.hero-quote span {
+  display: block;
+  color: var(--ink-mute)
 }
 
-/* =========================================================
-   DETAIL
-========================================================= */
-
-.detail{
-  position:fixed;
-  inset:0;
-  background:var(--paper);
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  display:none;
-  z-index:30;
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px
 }
 
-.detail.open{
-  display:block;
+.progress-track,
+.folder-progress {
+  flex: 1;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--line);
+  overflow: hidden
 }
 
-.detail-inner{
-  max-width:560px;
-  margin:0 auto;
-  padding-bottom:70px;
+.progress-fill,
+.folder-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #E4A339, #C65A6B, #8B4B6B, #3D3466);
+  border-radius: 5px
 }
 
-.detail-header{
-  position:sticky;
-  top:0;
-  z-index:5;
-  background:
-    linear-gradient(
-      180deg,
-      var(--paper) 70%,
-      transparent
-    );
-  padding:16px 16px 10px;
-  display:flex;
-  align-items:center;
-  gap:12px;
+.progress-label {
+  font-size: 12px;
+  color: var(--ink-mute);
+  font-weight: 700
 }
 
-.back-btn{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:var(--paper-soft);
-  border:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
-  color:var(--ink);
-  cursor:pointer;
-  flex-shrink:0;
+.arc-strip {
+  display: flex;
+  gap: 3px;
+  padding: 0 22px 8px
 }
 
-.back-btn:active{
-  transform:scale(.92);
+.arc-dot {
+  height: 4px;
+  flex: 1;
+  border-radius: 4px
 }
 
-.save-toast{
-  font-size:11.5px;
-  color:var(--accent);
-  font-weight:700;
-  opacity:0;
-  transition:opacity .3s ease;
-  letter-spacing:.02em;
+.folder-list {
+  padding: 6px 16px 20px
 }
 
-.save-toast.show{
-  opacity:1;
+.folder-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden
 }
 
-.detail-hero{
-  padding:6px 22px 22px;
+.folder-card:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent)
 }
 
-.detail-num{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-weight:500;
-  font-size:15px;
-  color:var(--accent);
-  margin-bottom:6px;
+.folder-num {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 26px;
+  color: var(--accent);
+  min-width: 40px
 }
 
-.detail-title{
-  font-family:'Fraunces',serif;
-  font-weight:600;
-  font-size:28px;
-  line-height:1.08;
-  margin:0 0 8px;
+.folder-body {
+  flex: 1
 }
 
-.detail-sub{
-  font-size:13.5px;
-  color:var(--ink-mute);
-  line-height:1.5;
-  margin:0;
+.folder-title {
+  font-family: Fraunces, serif;
+  font-weight: 600;
+  font-size: 15.5px;
+  margin: 0 0 3px
 }
 
-.section{
-  padding:0 22px 26px;
+.folder-sub {
+  font-size: 12px;
+  color: var(--ink-mute);
+  margin: 0 0 8px;
+  line-height: 1.35
 }
 
-.field{
-  margin-bottom:20px;
+.folder-chev {
+  font-size: 20px;
+  color: var(--ink-mute)
 }
 
-.field-label{
-  font-size:13.5px;
-  font-weight:600;
-  color:var(--ink);
-  margin-bottom:8px;
-  line-height:1.4;
-  display:block;
-}
 
-.field input[type=text],
-.field textarea{
-  width:100%;
-  border:1px solid var(--line);
-  background:var(--paper-soft);
-  border-radius:12px;
-  padding:12px 14px;
-  font-size:16px;
-  color:var(--ink);
-  font-family:'Karla',sans-serif;
-  resize:vertical;
-  transition:border-color .15s ease;
+/* ====================================================================
+ * HALAMAN UTAMA — Tombol PDF, Backup & Footer
+ ==================================================================== */
+.pdf-row,
+.backup-row {
+  padding: 0 22px;
+  margin-top: 10px
 }
 
-.field input[type=text]:focus,
-.field textarea:focus{
-  outline:none;
-  border-color:var(--accent);
+.backup-row {
+  display: flex;
+  gap: 10px
 }
 
-.field textarea{
-  min-height:64px;
-  line-height:1.5;
+.pdf-btn,
+.backup-btn {
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  font-weight: 700
 }
 
-.field textarea.big{
-  min-height:120px;
+.pdf-btn {
+  width: 100%;
+  border: none;
+  background: var(--ink);
+  color: white
 }
 
-.field textarea.letter{
-  min-height:110px;
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-size:15.5px;
+.backup-btn {
+  flex: 1;
+  background: var(--paper-soft);
+  color: var(--ink);
+  font-size: 12px
 }
 
-.money-wrap{
-  position:relative;
+.privacy-note,
+.home-footer {
+  text-align: center;
+  color: var(--ink-mute);
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 12px 28px
 }
 
-.money-wrap span{
-  position:absolute;
-  left:14px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:15px;
-  color:var(--ink-mute);
-  font-weight:600;
+.home-footer {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 13.5px;
+  padding-bottom: 30px
 }
 
-.money-wrap input{
-  padding-left:38px !important;
-}
 
-.check-grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-bottom:10px;
+/* ====================================================================
+ * HALAMAN DETAIL — Header & Judul Folder
+ ==================================================================== */
+.detail {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  z-index: 20;
+  overflow: auto
 }
 
-.chip{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  border:1px solid var(--line);
-  background:var(--paper-soft);
-  border-radius:20px;
-  padding:8px 13px;
-  font-size:13px;
-  cursor:pointer;
-  color:var(--ink-mute);
-  transition:.15s ease;
+.detail.open {
+  display: block
 }
 
-.chip input{
-  display:none;
+.detail-inner {
+  max-width: 560px;
+  margin: auto;
+  padding-bottom: 60px
 }
 
-.chip .dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:var(--line);
-  flex-shrink:0;
-  transition:.15s ease;
+.detail-header {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(var(--paper) 70%, transparent);
+  padding: 16px;
+  z-index: 5;
+  display: flex;
+  gap: 12px;
+  align-items: center
 }
 
-.chip.checked{
-  background:var(--accent-soft);
-  border-color:var(--accent);
-  color:var(--ink);
-  font-weight:600;
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  font-size: 18px;
+  cursor: pointer
 }
 
-.chip.checked .dot{
-  background:var(--accent);
+.save-toast {
+  opacity: 0;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700
 }
 
-.other-input{
-  margin-top:2px;
+.save-toast.show {
+  opacity: 1
 }
 
-.list-items{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+.detail-hero {
+  padding: 4px 22px 22px
 }
 
-.list-item{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.detail-num {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  color: var(--accent);
+  margin: 0 0 6px
 }
 
-.list-item .li-num{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  color:var(--accent);
-  font-size:15px;
-  width:18px;
-  flex-shrink:0;
-  text-align:right;
+.detail-title {
+  font-size: 28px;
+  line-height: 1.08;
+  margin: 0 0 8px
 }
 
-.list-item input{
-  flex:1;
+.detail-sub {
+  font-size: 13.5px;
+  color: var(--ink-mute);
+  margin: 0;
+  line-height: 1.5
 }
 
-.timeline-slot{
-  display:flex;
-  gap:14px;
-  padding:14px 0;
-  border-bottom:1px dashed var(--line);
-}
 
-.timeline-slot:last-child{
-  border-bottom:none;
+/* ====================================================================
+ * FORM PERTANYAAN — Field, Jawaban, Tombol Edit/Simpan
+ ==================================================================== */
+.section {
+  padding: 0 22px 24px
 }
 
-.tl-time{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-weight:600;
-  font-size:15px;
-  color:var(--accent);
-  width:52px;
-  flex-shrink:0;
-  padding-top:10px;
+.field {
+  margin-bottom: 20px
 }
 
-.tl-input{
-  flex:1;
+.field-head {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px
 }
-
-/* =========================================================
-   VIEW / EDIT
-========================================================= */
 
-.field-head{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom:8px;
+.field-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.4
 }
 
-.field-head .field-label{
-  margin:0;
-  flex:1;
+.edit-btn,
+.add-btn {
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap
 }
 
-.edit-btn{
-  border:1px solid var(--line);
-  background:var(--paper-soft);
-  color:var(--accent);
-  border-radius:999px;
-  padding:5px 10px;
-  font-size:11px;
-  font-weight:700;
-  cursor:pointer;
-  white-space:nowrap;
+.answer-view {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-height: 46px;
+  line-height: 1.5;
+  font-size: 15px;
+  white-space: pre-wrap
 }
 
-.edit-btn:active,
-.save-btn:active,
-.cancel-btn:active{
-  transform:scale(.97);
+.empty {
+  color: var(--ink-mute);
+  font-style: italic;
+  font-size: 13px
 }
 
-.answer-view{
-  background:var(--paper-soft);
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px 14px;
-  min-height:46px;
-  font-size:15px;
-  line-height:1.5;
-  color:var(--ink);
-  white-space:pre-wrap;
+input[type=text],
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: var(--ink);
+  resize: vertical
 }
 
-.answer-view.empty{
-  color:var(--ink-mute);
-  font-style:italic;
-  font-size:13px;
+textarea {
+  min-height: 76px;
+  line-height: 1.5
 }
 
-.answer-checks{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
+.big {
+  min-height: 120px
 }
 
-.answer-chip{
-  border:1px solid var(--accent);
-  background:var(--accent-soft);
-  border-radius:20px;
-  padding:7px 11px;
-  font-size:12.5px;
-  color:var(--ink);
+.letter {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 15.5px
 }
 
-.edit-actions{
-  display:flex;
-  justify-content:flex-end;
-  gap:8px;
-  margin-top:8px;
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px
 }
 
 .save-btn,
-.cancel-btn{
-  border-radius:9px;
-  padding:8px 12px;
-  font-size:12px;
-  font-weight:700;
-  cursor:pointer;
+.cancel-btn {
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer
 }
 
-.save-btn{
-  border:1px solid var(--accent);
-  background:var(--accent);
-  color:#fff;
+.save-btn {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: white
 }
 
-.cancel-btn{
-  border:1px solid var(--line);
-  background:var(--paper-soft);
-  color:var(--ink-mute);
+.cancel-btn {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--ink-mute)
 }
 
-.timeline-slot .field-head{
-  margin-bottom:8px;
+
+/* ====================================================================
+ * CHIP — Pilihan Checklist & Tampilan Jawaban
+ ==================================================================== */
+.check-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px
 }
 
-.timeline-slot .answer-view{
-  min-height:42px;
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer
 }
 
-/* =========================================================
-   GALLERY
-========================================================= */
-
-.gallery-label{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:10px;
+.chip input {
+  display: none
 }
 
-.gallery-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
+.chip.checked {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  font-weight: 700
 }
 
-.gal-item{
-  position:relative;
-  aspect-ratio:1/1;
-  border-radius:10px;
-  overflow:hidden;
-  background:var(--paper-soft);
-  border:1px solid var(--line);
+.answer-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px
 }
 
-.gal-item img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
+.answer-chip {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 20px;
+  padding: 7px 11px;
+  font-size: 12.5px
 }
 
-.gal-del{
-  position:absolute;
-  top:4px;
-  right:4px;
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  background:rgba(45,36,56,.72);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-  border:none;
-  cursor:pointer;
+
+/* ====================================================================
+ * INPUT LIST & UANG (Rp)
+ ==================================================================== */
+.list-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px
 }
 
-.gal-add{
-  aspect-ratio:1/1;
-  border-radius:10px;
-  border:1.5px dashed var(--line);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  color:var(--ink-mute);
-  font-size:11px;
-  cursor:pointer;
-  background:var(--paper-soft);
-  text-align:center;
-  padding:6px;
+.li-num {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  color: var(--accent);
+  width: 18px
 }
 
-.gal-add span{
-  font-size:20px;
-  color:var(--accent);
-  line-height:1;
+.money-wrap {
+  position: relative
 }
 
-input[type=file]{
-  display:none;
+.money-wrap span {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-mute);
+  font-weight: 700
 }
 
-/* =========================================================
-   CORE
-========================================================= */
-
-.core-static{
-  margin-top:6px;
-  padding:20px;
-  border-radius:16px;
-  background:
-    linear-gradient(
-      160deg,
-      var(--accent-soft),
-      transparent
-    );
-  border:1px solid var(--line);
+.money-wrap input {
+  padding-left: 40px
 }
 
-.core-static h4{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-size:16px;
-  margin:0 0 12px;
-  color:var(--ink);
+
+/* ====================================================================
+ * TIMELINE — Satu Hari Biasa (Folder 13)
+ ==================================================================== */
+.timeline-slot {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--line)
 }
 
-.core-item{
-  margin-bottom:12px;
+.tl-time {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--accent);
+  width: 52px;
+  padding-top: 9px
 }
 
-.core-item b{
-  display:block;
-  font-size:11.5px;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:var(--accent);
-  margin-bottom:2px;
+.tl-input {
+  flex: 1
 }
 
-.core-item span{
-  font-size:13.5px;
-  color:var(--ink);
-  line-height:1.4;
+
+/* ====================================================================
+ * PERTANYAAN TAMBAHAN (Custom Question)
+ ==================================================================== */
+.custom-box {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  margin-top: 4px
 }
 
-.core-final{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-size:14.5px;
-  text-align:center;
-  margin-top:16px;
-  padding-top:16px;
-  border-top:1px solid var(--line);
-  color:var(--ink);
+.custom-title {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 17px;
+  margin: 0 0 5px
 }
 
-/* =========================================================
-   DANGER
-========================================================= */
-
-.danger-zone{
-  padding:10px 22px 40px;
-  text-align:center;
+.custom-help {
+  font-size: 12px;
+  color: var(--ink-mute);
+  line-height: 1.5;
+  margin: 0 0 12px
 }
 
-.danger-btn{
-  background:none;
-  border:none;
-  color:var(--ink-mute);
-  font-size:12px;
-  text-decoration:underline;
-  cursor:pointer;
-  padding:8px;
+.custom-card {
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 10px
 }
 
-/* =========================================================
-   PRINT / PDF
-========================================================= */
-
-.print-sheet{
-  display:none;
+.custom-q {
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 8px
 }
 
-@media print{
+.custom-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px
+}
 
-  body{
-    background:#fff;
+.delete-btn {
+  border: 0;
+  background: none;
+  color: #9b5863;
+  text-decoration: underline;
+  font-size: 11px;
+  cursor: pointer
+}
+
+
+/* ====================================================================
+ * GALERI FOTO
+ ==================================================================== */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px
+}
+
+.gal-item,
+.gal-add {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  position: relative
+}
+
+.gal-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover
+}
+
+.gal-del {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  border: 0;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  background: #2D2438cc;
+  color: white;
+  cursor: pointer
+}
+
+.gal-add {
+  border-style: dashed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--ink-mute);
+  cursor: pointer
+}
+
+.gal-add span {
+  font-size: 20px;
+  color: var(--accent)
+}
+
+input[type=file] {
+  display: none
+}
+
+.danger-zone {
+  text-align: center;
+  padding: 10px 22px 35px
+}
+
+.danger-btn {
+  border: 0;
+  background: none;
+  text-decoration: underline;
+  color: var(--ink-mute);
+  font-size: 12px;
+  cursor: pointer
+}
+
+
+/* ====================================================================
+ * MODE CETAK — Pengaturan Dasar Print/PDF
+ ==================================================================== */
+.print-sheet {
+  display: none
+}
+
+@media print {
+  body * {
+    visibility: hidden
   }
 
-  body > *:not(.print-sheet){
-    display:none !important;
+  .print-sheet,
+  .print-sheet * {
+    visibility: visible
   }
 
-  .print-sheet{
-    display:block !important;
-    position:absolute;
-    left:0;
-    top:0;
-    width:100%;
-    margin:0;
-    padding:0;
-    background:#fff;
+  .print-sheet {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%
   }
 
-  @page{
-    size:A4;
-    margin:17mm 16mm 18mm;
-  }
-
-  .story-cover{
-    min-height:250mm;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    text-align:center;
-    page-break-after:always;
-  }
-
-  .story-cover-eyebrow{
-    font-family:'Karla',sans-serif;
-    font-size:10px;
-    letter-spacing:.22em;
-    text-transform:uppercase;
-    font-weight:700;
-    color:#8B4B6B;
-    margin-bottom:18px;
-  }
-
-  .story-cover h1{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:39px;
-    line-height:1.05;
-    color:#2D2438;
-    margin:0 auto 12px;
-    max-width:500px;
-  }
-
-  .story-cover h2{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-weight:500;
-    font-size:18px;
-    color:#7A7086;
-    margin:0 0 30px;
-  }
-
-  .story-cover-line{
-    width:70px;
-    height:2px;
-    margin:0 auto 25px;
-    background:#C65A6B;
-  }
-
-  .story-cover-quote{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-size:15px;
-    line-height:1.75;
-    color:#3D3466;
-    max-width:390px;
-    margin:0 auto;
-  }
-
-  .story-cover-date{
-    margin-top:45px;
-    font-family:'Karla',sans-serif;
-    font-size:10px;
-    color:#9A91A0;
-    letter-spacing:.08em;
-  }
-
-  .story-chapter{
-    page-break-before:always;
-    padding-top:8mm;
-  }
-
-  .story-chapter:first-of-type{
-    page-break-before:auto;
-  }
-
-  .story-chapter-head{
-    margin-bottom:22px;
-    border-bottom:1px solid #E4DACB;
-    padding-bottom:12px;
-  }
-
-  .story-chapter-number{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-size:12px;
-    font-weight:500;
-    color:#C65A6B;
-    margin-bottom:4px;
-  }
-
-  .story-chapter-title{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:25px;
-    line-height:1.1;
-    color:#2D2438;
-    margin:0 0 5px;
-  }
-
-  .story-chapter-sub{
-    font-family:'Karla',sans-serif;
-    font-size:11px;
-    color:#7A7086;
-  }
-
-  .story-text{
-    font-family:'Karla',sans-serif;
-    font-size:13.5px;
-    line-height:1.72;
-    color:#2D2438;
-  }
-
-  .story-text p{
-    margin:0 0 13px;
-  }
-
-  .story-text p:last-child{
-    margin-bottom:0;
-  }
-
-  .story-dropcap:first-letter{
-    font-family:'Fraunces',serif;
-    font-size:40px;
-    float:left;
-    line-height:.8;
-    padding-right:5px;
-    padding-top:5px;
-    color:#C65A6B;
-  }
-
-  .story-image-grid{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-top:20px;
-  }
-
-  .story-image-grid img{
-    width:105px;
-    height:105px;
-    object-fit:cover;
-    border-radius:7px;
-  }
-
-  .story-quote{
-    margin:22px 0;
-    padding:14px 18px;
-    border-left:2px solid #C65A6B;
-    background:#FBF8F4;
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-size:15px;
-    line-height:1.6;
-    color:#3D3466;
-  }
-
-  .timeline-story{
-    margin-top:4px;
-  }
-
-  .timeline-story-row{
-    display:flex;
-    gap:15px;
-    padding:9px 0;
-    border-bottom:1px dashed #E4DACB;
-  }
-
-  .timeline-story-time{
-    width:45px;
-    flex-shrink:0;
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-weight:600;
-    font-size:12px;
-    color:#8B4B6B;
-  }
-
-  .timeline-story-text{
-    flex:1;
-    font-family:'Karla',sans-serif;
-    font-size:12.5px;
-    line-height:1.5;
-    color:#2D2438;
-  }
-
-  .core-print{
-    margin-top:25px;
-    padding:18px;
-    border:1px solid #E4DACB;
-    background:#FBF8F4;
-    border-radius:10px;
-  }
-
-  .core-print-title{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-size:17px;
-    margin:0 0 14px;
-  }
-
-  .core-print-item{
-    margin-bottom:9px;
-  }
-
-  .core-print-item b{
-    display:block;
-    font-family:'Karla',sans-serif;
-    font-size:9px;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:#C65A6B;
-    margin-bottom:2px;
-  }
-
-  .core-print-item span{
-    font-family:'Karla',sans-serif;
-    font-size:11.5px;
-    line-height:1.45;
-  }
-
-  .story-ending{
-    min-height:240mm;
-    page-break-before:always;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-  }
-
-  .story-ending-inner{
-    max-width:460px;
-  }
-
-  .story-ending h2{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:30px;
-    line-height:1.1;
-    margin:0 0 22px;
-    color:#2D2438;
-  }
-
-  .story-ending p{
-    font-family:'Fraunces',serif;
-    font-style:italic;
-    font-size:16px;
-    line-height:1.8;
-    color:#3D3466;
-  }
-
-  .story-footer{
-    margin-top:35px;
-    font-family:'Karla',sans-serif;
-    font-size:9px;
-    color:#9A91A0;
-  }
-
-  .avoid-break{
-    break-inside:avoid;
+  @page {
+    margin: 16mm 14mm
   }
 }
 
-::selection{
-  background:var(--accent-soft);
+
+/* ====================================================================
+ * MODE CETAK — Halaman Cerita PDF (Sampul, Isi, Penutup)
+ ==================================================================== */
+.ph-cover {
+  padding: 65px 0 40px;
+  text-align: center;
+  page-break-after: always
+}
+
+.ph-cover .eb {
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: #8B4B6B;
+  font-weight: 700
+}
+
+.ph-cover h1 {
+  font-family: Fraunces, serif;
+  font-size: 36px;
+  margin: 14px 0 8px
+}
+
+.ph-cover h2 {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 17px;
+  color: #7A7086
+}
+
+.ph-cover blockquote {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  line-height: 1.7;
+  max-width: 420px;
+  margin: 28px auto
+}
+
+.story {
+  max-width: 720px;
+  margin: auto
+}
+
+.story-section {
+  margin-bottom: 26px;
+  break-inside: avoid
+}
+
+.story-section h2 {
+  font-family: Fraunces, serif;
+  font-size: 22px;
+  margin: 0 0 9px
+}
+
+.story-section p {
+  font-family: Karla, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.8;
+  margin: 0 0 10px
+}
+
+.story-section .quote {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 15px;
+  border-left: 2px solid #C65A6B;
+  padding-left: 14px
+}
+
+.story-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px
+}
+
+.story-images img {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 8px
+}
+
+.story-end {
+  page-break-before: always;
+  text-align: center;
+  padding-top: 50px
+}
+
+.story-end h2 {
+  font-family: Fraunces, serif;
+  font-size: 28px
+}
+
+.story-end p {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.8
 }
 </style>
 </head>
-
 <body>
-
 <div class="app" id="homeView"></div>
-
 <div class="detail" id="detailView"></div>
-
 <div class="print-sheet" id="printSheet"></div>
 
 <script>
+// ======================================================================
+// DATA & KONSTANTA — Daftar 18 folder pertanyaan (CATS), warna gradasi (accent)
+// ======================================================================
+const TIME_SLOTS = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00", "21.00"];
+const F = (k, l, t = 'area', x = {}) => ({
+  k,
+  l,
+  t,
+  ...x
+});
+const CATS = [{
+  id: 'c0',
+  num: '00',
+  title: 'Sampul',
+  sub: 'Titik awal cerita ini.',
+  fields: [F('tanggal', 'Tanggal aku menulis ini', 'text'), F('usia', 'Usiaku sekarang', 'text'), F('tahun', 'Tahun yang sedang aku bayangkan', 'text')]
+}, {
+  id: 'c1',
+  num: '01',
+  title: 'Aku Bangun Pagi',
+  sub: 'Hari ini adalah hari Selasa.',
+  fields: [F('jam_bangun', 'Aku bangun pukul', 'text'), F('hal_pertama', 'Hal pertama yang aku lakukan adalah'), F('perasaan_bangun', 'Aku bangun dengan perasaan', 'text'), F('alasan_tenang', 'Aku tidak terburu-buru karena'), F('suasana_kamar', 'Aku melihat kamar tidurku dan suasananya seperti'), F('cahaya_pagi', 'Cahaya pagi yang masuk ke kamar'), F('syukur_pagi', 'Hal pertama yang membuatku bersyukur pagi ini')]
+}, {
+  id: 'c2',
+  num: '02',
+  title: 'Hubunganku dengan Allah',
+  sub: 'Yang menopang semuanya.',
+  fields: [F('ibadah', 'Setelah bangun, aku:', 'check', {
+    opts: ['Shalat Subuh', 'Dzikir', 'Membaca Al-Qur\'an', 'Berdoa', 'Journaling'],
+    other: true
+  }), F('hubungan_spiritual', 'Aku ingin hubungan spiritualku 5 tahun dari sekarang terasa seperti'), F('rasa_ibadah', 'Hal yang paling ingin aku rasakan dalam ibadahku'), F('doa_sering', 'Doa yang paling sering aku panjatkan')]
+}, {
+  id: 'c3',
+  num: '03',
+  title: 'Tubuhku & Kesehatanku',
+  sub: 'Rumah yang aku tinggali seumur hidup.',
+  fields: [F('tubuh_terasa', 'Aku ingin tubuhku terasa'), F('kondisi_fisik', 'Berat badan / kondisi fisik yang membuatku nyaman', 'text'), F('olahraga', 'Olahraga yang aku lakukan', 'text'), F('jam_olahraga', 'Aku biasanya olahraga pada pukul', 'text'), F('cara_makan', 'Aku makan dengan cara'), F('jam_tidur', 'Aku tidur sekitar pukul', 'text'), F('cermin', 'Aku ingin ketika melihat diriku di cermin, aku merasa'), F('rawat_diri', 'Aku merawat diriku dengan')]
+}, {
+  id: 'c4',
+  num: '04',
+  title: 'Ritual Kecantikan & Self-Care',
+  sub: 'Cara aku memperlakukan diriku.',
+  fields: [F('setelah_olahraga', 'Setelah olahraga aku'), F('body_care', 'Sabun/body care yang aku gunakan', 'text'), F('skincare', 'Skincare-ku'), F('parfum', 'Parfum yang aku pakai', 'text'), F('aku_banget', 'Hal kecil yang membuatku merasa "aku banget"'), F('beli_barang', 'Aku membeli barang yang aku suka dengan perasaan'), F('tidak_bersalah_beli', 'Aku tidak lagi merasa bersalah ketika')]
+}, {
+  id: 'c5',
+  num: '05',
+  title: 'Rumahku',
+  sub: 'Tempat semua cerita ini terjadi.',
+  fields: [F('tinggal', 'Aku tinggal di:', 'check', {
+    opts: ['Rumah sendiri', 'Rumah hasil renovasi', 'Apartemen'],
+    other: true
+  }), F('lokasi', 'Lokasinya', 'text'), F('rumah_seperti', 'Rumahku seperti apa?'), F('gaya_rumah', 'Gaya rumahku', 'text'), F('warna_dominan', 'Warna yang dominan', 'text'), F('ruangan_favorit', 'Ruangan favoritku', 'text'), F('hal_disuka_rumah', 'Hal yang paling aku suka dari rumahku'), F('fasilitas', 'Di rumah ini aku ingin ada:', 'check', {
+    opts: ['Kolam renang', 'Home gym', 'Dapur yang nyaman', 'Taman', 'Ruang kerja', 'Ruang bermain anak', 'Ruang keluarga', 'Coffee corner'],
+    other: true
+  }), F('suasana_malam', 'Suasana rumahku pada malam hari')]
+}, {
+  id: 'c6',
+  num: '06',
+  title: 'Suamiku & Pernikahanku',
+  sub: 'Tim kecil yang aku bangun bersama.',
+  fields: [F('pagi_bersama', 'Pagi hari aku dan suamiku biasanya'), F('ngobrol', 'Kami ngobrol tentang'), F('hubungan_terasa', 'Hubungan kami terasa'), F('waktu_berdua', 'Kami punya waktu berdua untuk'), F('pergi_berdua', 'Kami biasanya pergi berdua ke', 'text'), F('syukur_pernikahan', 'Hal yang paling aku syukuri dari kehidupan pernikahanku'), F('jadi_pasangan', 'Aku ingin menjadi pasangan yang')]
+}, {
+  id: 'c7',
+  num: '07',
+  title: 'Anak-anakku',
+  sub: 'Alasan aku ingin cepat pulang.',
+  fields: [F('usia_anak', 'Anak-anakku 5 tahun dari sekarang berusia', 'text'), F('anak_seperti', 'Mereka seperti apa?'), F('hubungan_anak', 'Hubunganku dengan mereka'), F('jadi_ibu', 'Aku ingin menjadi ibu yang'), F('aktivitas_bersama', 'Hal yang paling sering kami lakukan bersama'), F('diingat_sebagai', 'Aku ingin mereka mengingat masa kecilnya sebagai'), F('waktu_untuk_anak', 'Aku punya waktu untuk:', 'check', {
+    opts: ['Mengantar sekolah', 'Menjemput sekolah', 'Makan bersama', 'Membantu belajar', 'Bermain', 'Jalan-jalan', 'Liburan', 'Menonton / aktivitas keluarga'],
+    other: true
+  }), F('tidak_melewatkan', 'Aku tidak ingin melewatkan')]
+}, {
+  id: 'c9',
+  num: '08',
+  title: 'Pekerjaan, Bisnis & Ide-Ideku',
+  sub: 'Peranku dalam apa yang aku bangun, dan ide yang menjadi nyata.',
+  fields: [F('bekerja_sebagai', 'Aku bekerja sebagai', 'text'), F('jenis_usaha', 'Aku punya:', 'check', {
+    opts: ['Perusahaan sendiri', 'Beberapa bisnis', 'Pekerjaan tetap + bisnis', 'Investasi'],
+    other: true
+  }), F('nama_bidang', 'Nama / bidang perusahaan atau bisnis utamaku', 'text'), F('jual_apa', 'Bisnis ini menjual'), F('target_customer', 'Target customer-nya'), F('peran_utama', 'Peran utamaku di perusahaan:', 'check', {
+    opts: ['Mencari ide', 'Menentukan business model', 'Strategi', 'Mengembangkan produk', 'Mencari peluang', 'Bertemu partner', 'Mengawasi perusahaan'],
+    other: true
+  }), F('tidak_dikerjakan_sendiri', 'Hal yang TIDAK lagi aku kerjakan sendiri'), F('orang_bersama', 'Orang-orang yang bekerja bersamaku'), F('alasan_kantor', 'Aku pergi ke kantor karena'), F('alasan_tidak_kantor', 'Aku tidak pergi ke kantor karena'), F('jam_kerja', 'Jam kerjaku biasanya', 'text'), F('bebas_ubah_jadwal', 'Aku bebas mengubah jadwalku ketika'), F('bidang_bisnis', 'Aku punya bisnis di bidang', 'list', {
+    n: 3
+  }), F('sumber_penghasilan', 'Sumber penghasilan bisnisku'), F('bagian_favorit', 'Aku paling suka bagian'), F('dibantu', 'Aku punya orang yang membantu:', 'check', {
+    opts: ['Marketing', 'Sales', 'Operasional', 'Finance', 'Admin', 'Product', 'Design', 'Management'],
+    other: true
+  }), F('waktu_founder', 'Aku sebagai founder menghabiskan waktu untuk'), F('menemukan_ide', 'Aku menemukan ide bisnis baru dengan cara'), F('sistem_ide', 'Ketika punya ide baru, sistemku adalah'), F('tidak_tinggalkan_ide', 'Aku tidak lagi meninggalkan ide hanya karena')]
+}, {
+  id: 'c11',
+  num: '09',
+  title: 'Uangku',
+  sub: 'Angka yang mendukung ketenangan.',
+  fields: [F('penghasilan_keluarga', 'Penghasilan keluarga per bulan yang aku bayangkan', 'money'), F('penghasilan_pribadi', 'Penghasilan pribadiku', 'money'), F('penghasilan_bisnis', 'Penghasilan dari bisnis', 'money'), F('penghasilan_investasi', 'Penghasilan dari investasi/aset', 'money'), F('aset', 'Aku memiliki:', 'check', {
+    opts: ['Dana darurat', 'Tabungan', 'Investasi', 'Properti', 'Bisnis'],
+    other: true
+  }), F('aman_finansial', 'Aku merasa aman secara finansial karena'), F('beli_tanpa_khawatir', 'Aku bisa membeli sesuatu yang aku inginkan tanpa khawatir ketika'), F('tidak_lagi_perasaan', 'Aku tidak lagi hidup dengan perasaan')]
+}, {
+  id: 'c12',
+  num: '10',
+  title: 'Gaya Hidupku',
+  sub: 'Kenikmatan yang aku izinkan untuk diri sendiri.',
+  fields: [F('mobil', 'Aku punya mobil', 'text'), F('liburan', 'Aku pergi liburan', 'text'), F('kali_setahun', 'Dalam setahun aku ingin bepergian sekitar (kali)', 'text'), F('destinasi', 'Destinasi yang sering aku kunjungi', 'text'), F('dinikmati', 'Aku menikmati:', 'check', {
+    opts: ['Cafe', 'Restaurant', 'Shopping', 'Spa', 'Traveling', 'Hotel bagus', 'Concert', 'Hobi'],
+    other: true
+  }), F('tanpa_bersalah_kecil', 'Hal-hal kecil yang sekarang bisa aku nikmati tanpa merasa bersalah')]
+}, {
+  id: 'c13',
+  num: '11',
+  title: 'Teman, Lingkungan & Relasi',
+  sub: 'Orang-orang yang membentukku.',
+  fields: [F('orang_sekitar', 'Orang-orang di sekitarku adalah'), F('teman_seperti', 'Aku punya teman yang'), F('lebih_sering', 'Aku ingin lebih sering'), F('lingkungan_seperti', 'Aku ingin berada di lingkungan yang'), F('menginspirasi', 'Orang-orang yang menginspirasiku'), F('jadi_orang', 'Aku menjadi orang yang')]
+}, {
+  id: 'c14',
+  num: '12',
+  title: 'Diriku Sendiri',
+  sub: 'Perempuan yang sedang aku tuju.',
+  fields: [F('diriku_5th', 'Aku 5 tahun dari sekarang adalah perempuan yang', 'area', {
+    big: true
+  }), F('sifat', 'Aku lebih:', 'check', {
+    opts: ['Percaya diri', 'Tenang', 'Berani', 'Disiplin', 'Kreatif', 'Mandiri', 'Spiritual', 'Sehat', 'Kaya', 'Bebas', 'Lembut', 'Tegas'],
+    other: true
+  }), F('dulu_sulit', 'Hal yang dulu sangat sulit bagiku tetapi sekarang sudah biasa'), F('berhenti_merasa', 'Aku sudah berhenti merasa', 'text'), F('sudah_berani', 'Aku sudah berani'), F('bangga_diri14', 'Aku bangga kepada diriku karena')]
+}, {
+  id: 'c15',
+  num: '13',
+  title: 'Satu Hari Biasa',
+  sub: 'Ceritakan hari Selasa ini seperti sebuah cerita.',
+  timeline: true
+}, {
+  id: 'c16',
+  num: '14',
+  title: 'Perasaanku',
+  sub: 'Bukan apa yang aku punya, tapi bagaimana rasanya.',
+  fields: [F('perasaan_hari', 'Sepanjang hari ini aku merasa'), F('bebas_karena', 'Aku merasa bebas karena'), F('kaya_karena', 'Aku merasa kaya karena'), F('berhasil_karena', 'Aku merasa berhasil karena'), F('tenang_karena', 'Aku merasa tenang karena'), F('dekat_keluarga', 'Aku merasa dekat dengan keluargaku karena'), F('bangga_karena16', 'Aku merasa bangga pada diriku karena'), F('kalimat_hidup', 'Kalimat yang menggambarkan hidupku', 'area', {
+    letter: true
+  })]
+}, {
+  id: 'c17',
+  num: '15',
+  title: 'Apa yang Sebenarnya Aku Cari?',
+  sub: 'Jika semua benda dan angka dihilangkan.',
+  fields: [F('kehidupan_sebenarnya', 'Kehidupan yang sebenarnya aku inginkan adalah', 'area', {
+    big: true
+  }), F('hidup_terasa17', 'Aku ingin hidupku terasa', 'text'), F('lebih_banyak', 'Aku ingin memiliki lebih banyak', 'text'), F('lebih_sedikit', 'Aku ingin memiliki lebih sedikit', 'text'), F('kebebasan_untuk', 'Aku ingin punya kebebasan untuk'), F('tidak_ingin_kembali', 'Aku tidak ingin kembali ke kehidupan yang')]
+}, {
+  id: 'c18',
+  num: '16',
+  title: 'Surat dari 5 Tahun Depan',
+  sub: 'Dear Della, sekarang kamu sedang membaca surat ini dari masa depan.',
+  fields: [F('dulu_merasa', 'Aku tahu kamu dulu sering merasa', 'area', {
+    letter: true
+  }), F('dulu_berpikir', 'Aku ingat dulu kamu sering berpikir', 'area', {
+    letter: true
+  }), F('sekarang_sudah', 'Tapi lihat kita sekarang. Sekarang kita sudah', 'area', {
+    big: true,
+    letter: true
+  }), F('tidak_perlu_takut', 'Hal yang ternyata tidak perlu kamu takutkan dulu', 'area', {
+    letter: true
+  }), F('bisa_dilakukan', 'Hal yang ternyata bisa kamu lakukan', 'area', {
+    letter: true
+  }), F('paling_dibanggakan', 'Hal yang paling aku banggakan dari kamu', 'area', {
+    letter: true
+  }), F('ingin_kamu_tahu', 'Aku ingin kamu tahu bahwa', 'area', {
+    letter: true
+  }), F('mulai_dari', 'Jangan terlalu takut. Mulai saja dari', 'text')]
+}, {
+  id: 'c19',
+  num: '17',
+  title: 'My Non-Negotiables',
+  sub: 'Yang tidak akan aku tukar dengan apa pun.',
+  fields: [F('daftar_nn', 'Dalam kehidupan yang aku bangun, aku tidak ingin kehilangan', 'list', {
+    n: 5
+  }), F('waktu_selalu', 'Aku ingin selalu punya waktu untuk'), F('jaga_selalu', 'Aku ingin selalu menjaga'), F('tidak_korbankan', 'Aku tidak akan mengorbankan')]
+}, {
+  id: 'c20',
+  num: '18',
+  title: 'Core of My Life',
+  sub: 'Aku sedang membangun kehidupan di mana...',
+  fields: [F('cukup_uang', 'Aku punya cukup uang untuk'), F('cukup_waktu', 'Aku punya cukup waktu untuk'), F('keluarga_yang', 'Aku punya keluarga yang'), F('pekerjaan_yang', 'Aku punya pekerjaan/bisnis yang'), F('tubuh_yang', 'Aku punya tubuh yang'), F('hubungan_allah_yang', 'Aku punya hubungan dengan Allah yang'), F('perempuan_yang', 'Aku merasa menjadi perempuan yang')],
+  core: true
+}];
+const stops = ['#E4A339', '#C65A6B', '#8B4B6B', '#3D3466'];
 
-/* =========================================================
-   CONFIGURATION
-========================================================= */
-
-const TIME_SLOTS = [
-  "06.00","07.00","08.00","09.00",
-  "10.00","11.00","12.00","13.00",
-  "14.00","15.00","16.00","17.00",
-  "18.00","19.00","20.00","21.00"
-];
-
-const CATS = [
-
-{
-  id:'c0',
-  num:'00',
-  title:'Sampul',
-  sub:'Titik awal cerita ini.',
-  fields:[
-    {k:'tanggal',l:'Tanggal aku menulis ini',t:'text'},
-    {k:'usia',l:'Usiaku sekarang',t:'text'},
-    {k:'tahun',l:'Tahun yang sedang aku bayangkan',t:'text'}
-  ]
-},
-
-{
-  id:'c1',
-  num:'01',
-  title:'Aku Bangun Pagi',
-  sub:'Hari ini adalah hari Selasa.',
-  fields:[
-    {k:'jam_bangun',l:'Aku bangun pukul',t:'text'},
-    {k:'hal_pertama',l:'Hal pertama yang aku lakukan adalah',t:'area'},
-    {k:'perasaan_bangun',l:'Aku bangun dengan perasaan',t:'text'},
-    {k:'alasan_tenang',l:'Aku tidak terburu-buru karena',t:'area'},
-    {k:'suasana_kamar',l:'Aku melihat kamar tidurku dan suasananya seperti',t:'area'},
-    {k:'cahaya_pagi',l:'Cahaya pagi yang masuk ke kamar',t:'area'},
-    {k:'syukur_pagi',l:'Hal pertama yang membuatku bersyukur pagi ini',t:'area'}
-  ]
-},
-
-{
-  id:'c2',
-  num:'02',
-  title:'Hubunganku dengan Allah',
-  sub:'Yang menopang semuanya.',
-  fields:[
-    {
-      k:'ibadah',
-      l:'Setelah bangun, aku:',
-      t:'check',
-      opts:[
-        'Shalat Subuh',
-        'Dzikir',
-        "Membaca Al-Qur'an",
-        'Berdoa',
-        'Journaling'
-      ],
-      other:true
-    },
-    {
-      k:'hubungan_spiritual',
-      l:'Aku ingin hubungan spiritualku 5 tahun dari sekarang terasa seperti',
-      t:'area'
-    },
-    {
-      k:'rasa_ibadah',
-      l:'Hal yang paling ingin aku rasakan dalam ibadahku',
-      t:'area'
-    },
-    {
-      k:'doa_sering',
-      l:'Doa yang paling sering aku panjatkan',
-      t:'area'
-    }
-  ]
-},
-
-{
-  id:'c3',
-  num:'03',
-  title:'Tubuhku & Kesehatanku',
-  sub:'Rumah yang aku tinggali seumur hidup.',
-  fields:[
-    {k:'tubuh_terasa',l:'Aku ingin tubuhku terasa',t:'area'},
-    {k:'kondisi_fisik',l:'Berat badan / kondisi fisik yang membuatku nyaman',t:'text'},
-    {k:'olahraga',l:'Olahraga yang aku lakukan',t:'text'},
-    {k:'jam_olahraga',l:'Aku biasanya olahraga pada pukul',t:'text'},
-    {k:'cara_makan',l:'Aku makan dengan cara',t:'area'},
-    {k:'jam_tidur',l:'Aku tidur sekitar pukul',t:'text'},
-    {k:'cermin',l:'Aku ingin ketika melihat diriku di cermin, aku merasa',t:'area'},
-    {k:'rawat_diri',l:'Aku merawat diriku dengan',t:'area'}
-  ]
-},
-
-{
-  id:'c4',
-  num:'04',
-  title:'Ritual Kecantikan & Self-Care',
-  sub:'Cara aku memperlakukan diriku.',
-  fields:[
-    {k:'setelah_olahraga',l:'Setelah olahraga aku',t:'area'},
-    {k:'body_care',l:'Sabun/body care yang aku gunakan',t:'text'},
-    {k:'skincare',l:'Skincare-ku',t:'area'},
-    {k:'parfum',l:'Parfum yang aku pakai',t:'text'},
-    {k:'aku_banget',l:'Hal kecil yang membuatku merasa "aku banget"',t:'area'},
-    {k:'beli_barang',l:'Aku membeli barang yang aku suka dengan perasaan',t:'area'},
-    {k:'tidak_bersalah_beli',l:'Aku tidak lagi merasa bersalah ketika',t:'area'}
-  ]
-},
-
-{
-  id:'c5',
-  num:'05',
-  title:'Rumahku',
-  sub:'Tempat semua cerita ini terjadi.',
-  fields:[
-    {
-      k:'tinggal',
-      l:'Aku tinggal di:',
-      t:'check',
-      opts:[
-        'Rumah sendiri',
-        'Rumah hasil renovasi',
-        'Apartemen'
-      ],
-      other:true
-    },
-    {k:'lokasi',l:'Lokasinya',t:'text'},
-    {k:'rumah_seperti',l:'Rumahku seperti apa?',t:'area'},
-    {k:'gaya_rumah',l:'Gaya rumahku',t:'text'},
-    {k:'warna_dominan',l:'Warna yang dominan',t:'text'},
-    {k:'ruangan_favorit',l:'Ruangan favoritku',t:'text'},
-    {k:'hal_disuka_rumah',l:'Hal yang paling aku suka dari rumahku',t:'area'},
-    {
-      k:'fasilitas',
-      l:'Di rumah ini aku ingin ada:',
-      t:'check',
-      opts:[
-        'Kolam renang',
-        'Home gym',
-        'Dapur yang nyaman',
-        'Taman',
-        'Ruang kerja',
-        'Ruang bermain anak',
-        'Ruang keluarga',
-        'Coffee corner'
-      ],
-      other:true
-    },
-    {k:'suasana_malam',l:'Suasana rumahku pada malam hari',t:'area'}
-  ]
-},
-
-{
-  id:'c6',
-  num:'06',
-  title:'Suamiku & Pernikahanku',
-  sub:'Tim kecil yang aku bangun bersama.',
-  fields:[
-    {k:'pagi_bersama',l:'Pagi hari aku dan suamiku biasanya',t:'area'},
-    {k:'ngobrol',l:'Kami ngobrol tentang',t:'area'},
-    {k:'hubungan_terasa',l:'Hubungan kami terasa',t:'area'},
-    {k:'waktu_berdua',l:'Kami punya waktu berdua untuk',t:'area'},
-    {k:'pergi_berdua',l:'Kami biasanya pergi berdua ke',t:'text'},
-    {k:'syukur_pernikahan',l:'Hal yang paling aku syukuri dari kehidupan pernikahanku',t:'area'},
-    {k:'jadi_pasangan',l:'Aku ingin menjadi pasangan yang',t:'area'}
-  ]
-},
-
-{
-  id:'c7',
-  num:'07',
-  title:'Anak-anakku',
-  sub:'Alasan aku ingin cepat pulang.',
-  fields:[
-    {k:'usia_anak',l:'Anak-anakku 5 tahun dari sekarang berusia',t:'text'},
-    {k:'anak_seperti',l:'Mereka seperti apa?',t:'area'},
-    {k:'hubungan_anak',l:'Hubunganku dengan mereka',t:'area'},
-    {k:'jadi_ibu',l:'Aku ingin menjadi ibu yang',t:'area'},
-    {k:'aktivitas_bersama',l:'Hal yang paling sering kami lakukan bersama',t:'area'},
-    {k:'diingat_sebagai',l:'Aku ingin mereka mengingat masa kecilnya sebagai',t:'area'},
-    {
-      k:'waktu_untuk_anak',
-      l:'Aku punya waktu untuk:',
-      t:'check',
-      opts:[
-        'Mengantar sekolah',
-        'Menjemput sekolah',
-        'Makan bersama',
-        'Membantu belajar',
-        'Bermain',
-        'Jalan-jalan',
-        'Liburan',
-        'Menonton / aktivitas keluarga'
-      ],
-      other:true
-    },
-    {k:'tidak_melewatkan',l:'Aku tidak ingin melewatkan',t:'area'}
-  ]
-},
-
-{
-  id:'c8',
-  num:'08',
-  title:'Pagiku Sebelum Bekerja',
-  sub:'Jeda tenang sebelum hari ramai dimulai.',
-  fields:[
-    {k:'setelah_anak_siap',l:'Setelah anak-anak siap sekolah, aku',t:'area'},
-    {
-      k:'antar',
-      l:'Aku mengantar mereka:',
-      t:'check',
-      opts:[
-        'Setiap hari',
-        'Beberapa hari',
-        'Dibantu orang lain'
-      ],
-      other:true
-    },
-    {k:'setelah_itu',l:'Setelah itu aku dan suamiku',t:'area'},
-    {k:'pergi_ke',l:'Kami pergi ke',t:'text'},
-    {k:'membicarakan',l:'Kami membicarakan',t:'area'},
-    {k:'punya_waktu_karena',l:'Aku merasa punya waktu karena',t:'area'}
-  ]
-},
-
-{
-  id:'c9',
-  num:'09',
-  title:'Pekerjaanku',
-  sub:'Peranku dalam apa yang aku bangun.',
-  fields:[
-    {k:'bekerja_sebagai',l:'Aku bekerja sebagai',t:'text'},
-    {
-      k:'jenis_usaha',
-      l:'Aku punya:',
-      t:'check',
-      opts:[
-        'Perusahaan sendiri',
-        'Beberapa bisnis',
-        'Pekerjaan tetap + bisnis',
-        'Investasi'
-      ],
-      other:true
-    },
-    {k:'nama_bidang',l:'Nama / bidang perusahaan atau bisnis utamaku',t:'text'},
-    {k:'jual_apa',l:'Bisnis ini menjual',t:'area'},
-    {k:'target_customer',l:'Target customer-nya',t:'area'},
-    {
-      k:'peran_utama',
-      l:'Peran utamaku di perusahaan:',
-      t:'check',
-      opts:[
-        'Mencari ide',
-        'Menentukan business model',
-        'Strategi',
-        'Mengembangkan produk',
-        'Mencari peluang',
-        'Bertemu partner',
-        'Mengawasi perusahaan'
-      ],
-      other:true
-    },
-    {k:'tidak_dikerjakan_sendiri',l:'Hal yang TIDAK lagi aku kerjakan sendiri',t:'area'},
-    {k:'orang_bersama',l:'Orang-orang yang bekerja bersamaku',t:'area'},
-    {k:'alasan_kantor',l:'Aku pergi ke kantor karena',t:'area'},
-    {k:'alasan_tidak_kantor',l:'Aku tidak pergi ke kantor karena',t:'area'},
-    {k:'jam_kerja',l:'Jam kerjaku biasanya',t:'text'},
-    {k:'bebas_ubah_jadwal',l:'Aku bebas mengubah jadwalku ketika',t:'area'}
-  ]
-},
-
-{
-  id:'c10',
-  num:'10',
-  title:'Bisnis & Ide-Ideku',
-  sub:'Ide yang jadi nyata.',
-  fields:[
-    {k:'bidang_bisnis',l:'Aku punya bisnis di bidang',t:'list',n:3},
-    {k:'sumber_penghasilan',l:'Sumber penghasilan bisnisku',t:'area'},
-    {k:'bagian_favorit',l:'Aku paling suka bagian',t:'area'},
-    {
-      k:'dibantu',
-      l:'Aku punya orang yang membantu:',
-      t:'check',
-      opts:[
-        'Marketing',
-        'Sales',
-        'Operasional',
-        'Finance',
-        'Admin',
-        'Product',
-        'Design',
-        'Management'
-      ],
-      other:true
-    },
-    {k:'waktu_founder',l:'Aku sebagai founder menghabiskan waktu untuk',t:'area'},
-    {k:'menemukan_ide',l:'Aku menemukan ide bisnis baru dengan cara',t:'area'},
-    {k:'sistem_ide',l:'Ketika punya ide baru, sistemku adalah',t:'area'},
-    {k:'tidak_tinggalkan_ide',l:'Aku tidak lagi meninggalkan ide hanya karena',t:'area'}
-  ]
-},
-
-{
-  id:'c11',
-  num:'11',
-  title:'Uangku',
-  sub:'Angka yang mendukung ketenangan.',
-  fields:[
-    {k:'penghasilan_keluarga',l:'Penghasilan keluarga per bulan yang aku bayangkan',t:'money'},
-    {k:'penghasilan_pribadi',l:'Penghasilan pribadiku',t:'money'},
-    {k:'penghasilan_bisnis',l:'Penghasilan dari bisnis',t:'money'},
-    {k:'penghasilan_investasi',l:'Penghasilan dari investasi/aset',t:'money'},
-    {
-      k:'aset',
-      l:'Aku memiliki:',
-      t:'check',
-      opts:[
-        'Dana darurat',
-        'Tabungan',
-        'Investasi',
-        'Properti',
-        'Bisnis'
-      ],
-      other:true
-    },
-    {k:'aman_finansial',l:'Aku merasa aman secara finansial karena',t:'area'},
-    {k:'beli_tanpa_khawatir',l:'Aku bisa membeli sesuatu yang aku inginkan tanpa khawatir ketika',t:'area'},
-    {k:'tidak_lagi_perasaan',l:'Aku tidak lagi hidup dengan perasaan',t:'area'}
-  ]
-},
-
-{
-  id:'c12',
-  num:'12',
-  title:'Gaya Hidupku',
-  sub:'Kenikmatan yang aku izinkan untuk diri sendiri.',
-  fields:[
-    {k:'mobil',l:'Aku punya mobil',t:'text'},
-    {k:'liburan',l:'Aku pergi liburan',t:'text'},
-    {k:'kali_setahun',l:'Dalam setahun aku ingin bepergian sekitar (kali)',t:'text'},
-    {k:'destinasi',l:'Destinasi yang sering aku kunjungi',t:'text'},
-    {
-      k:'dinikmati',
-      l:'Aku menikmati:',
-      t:'check',
-      opts:[
-        'Cafe',
-        'Restaurant',
-        'Shopping',
-        'Spa',
-        'Traveling',
-        'Hotel bagus',
-        'Concert',
-        'Hobi'
-      ],
-      other:true
-    },
-    {k:'tanpa_bersalah_kecil',l:'Hal-hal kecil yang sekarang bisa aku nikmati tanpa merasa bersalah',t:'area'}
-  ]
-},
-
-{
-  id:'c13',
-  num:'13',
-  title:'Teman, Lingkungan & Relasi',
-  sub:'Orang-orang yang membentukku.',
-  fields:[
-    {k:'orang_sekitar',l:'Orang-orang di sekitarku adalah',t:'area'},
-    {k:'teman_seperti',l:'Aku punya teman yang',t:'area'},
-    {k:'lebih_sering',l:'Aku ingin lebih sering',t:'area'},
-    {k:'lingkungan_seperti',l:'Aku ingin berada di lingkungan yang',t:'area'},
-    {k:'menginspirasi',l:'Orang-orang yang menginspirasiku',t:'area'},
-    {k:'jadi_orang',l:'Aku menjadi orang yang',t:'area'}
-  ]
-},
-
-{
-  id:'c14',
-  num:'14',
-  title:'Diriku Sendiri',
-  sub:'Perempuan yang sedang aku tuju.',
-  fields:[
-    {
-      k:'diriku_5th',
-      l:'Aku 5 tahun dari sekarang adalah perempuan yang',
-      t:'area',
-      big:true
-    },
-    {
-      k:'sifat',
-      l:'Aku lebih:',
-      t:'check',
-      opts:[
-        'Percaya diri',
-        'Tenang',
-        'Berani',
-        'Disiplin',
-        'Kreatif',
-        'Mandiri',
-        'Spiritual',
-        'Sehat',
-        'Kaya',
-        'Bebas',
-        'Lembut',
-        'Tegas'
-      ],
-      other:true
-    },
-    {k:'dulu_sulit',l:'Hal yang dulu sangat sulit bagiku tetapi sekarang sudah biasa',t:'area'},
-    {k:'berhenti_merasa',l:'Aku sudah berhenti merasa',t:'text'},
-    {k:'sudah_berani',l:'Aku sudah berani',t:'area'},
-    {k:'bangga_diri14',l:'Aku bangga kepada diriku karena',t:'area'}
-  ]
-},
-
-{
-  id:'c15',
-  num:'15',
-  title:'Satu Hari Biasa',
-  sub:'Ceritakan hari Selasa ini seperti sebuah cerita.',
-  timeline:true
-},
-
-{
-  id:'c16',
-  num:'16',
-  title:'Perasaanku',
-  sub:'Bukan apa yang aku punya, tapi bagaimana rasanya.',
-  fields:[
-    {k:'perasaan_hari',l:'Sepanjang hari ini aku merasa',t:'area'},
-    {k:'bebas_karena',l:'Aku merasa bebas karena',t:'area'},
-    {k:'kaya_karena',l:'Aku merasa kaya karena',t:'area'},
-    {k:'berhasil_karena',l:'Aku merasa berhasil karena',t:'area'},
-    {k:'tenang_karena',l:'Aku merasa tenang karena',t:'area'},
-    {k:'dekat_keluarga',l:'Aku merasa dekat dengan keluargaku karena',t:'area'},
-    {k:'bangga_karena16',l:'Aku merasa bangga pada diriku karena',t:'area'},
-    {k:'kalimat_hidup',l:'Kalimat yang menggambarkan hidupku',t:'area',letter:true}
-  ]
-},
-
-{
-  id:'c17',
-  num:'17',
-  title:'Apa yang Sebenarnya Aku Cari?',
-  sub:'Jika semua benda dan angka dihilangkan.',
-  fields:[
-    {k:'kehidupan_sebenarnya',l:'Kehidupan yang sebenarnya aku inginkan adalah',t:'area',big:true},
-    {k:'hidup_terasa17',l:'Aku ingin hidupku terasa',t:'text'},
-    {k:'lebih_banyak',l:'Aku ingin memiliki lebih banyak',t:'text'},
-    {k:'lebih_sedikit',l:'Aku ingin memiliki lebih sedikit',t:'text'},
-    {k:'kebebasan_untuk',l:'Aku ingin punya kebebasan untuk',t:'area'},
-    {k:'tidak_ingin_kembali',l:'Aku tidak ingin kembali ke kehidupan yang',t:'area'}
-  ]
-},
-
-{
-  id:'c18',
-  num:'18',
-  title:'Surat dari 5 Tahun Depan',
-  sub:'Dear Della, sekarang kamu sedang membaca surat ini dari masa depan.',
-  fields:[
-    {k:'dulu_merasa',l:'Aku tahu kamu dulu sering merasa',t:'area',letter:true},
-    {k:'dulu_berpikir',l:'Aku ingat dulu kamu sering berpikir',t:'area',letter:true},
-    {k:'sekarang_sudah',l:'Tapi lihat kita sekarang. Sekarang kita sudah',t:'area',big:true,letter:true},
-    {k:'tidak_perlu_takut',l:'Hal yang ternyata tidak perlu kamu takutkan dulu',t:'area',letter:true},
-    {k:'bisa_dilakukan',l:'Hal yang ternyata bisa kamu lakukan',t:'area',letter:true},
-    {k:'paling_dibanggakan',l:'Hal yang paling aku banggakan dari kamu',t:'area',letter:true},
-    {k:'ingin_kamu_tahu',l:'Aku ingin kamu tahu bahwa',t:'area',letter:true},
-    {k:'mulai_dari',l:'Jangan terlalu takut. Mulai saja dari',t:'text'}
-  ]
-},
-
-{
-  id:'c19',
-  num:'19',
-  title:'My Non-Negotiables',
-  sub:'Yang tidak akan aku tukar dengan apa pun.',
-  fields:[
-    {k:'daftar_nn',l:'Dalam kehidupan yang aku bangun, aku tidak ingin kehilangan',t:'list',n:5},
-    {k:'waktu_selalu',l:'Aku ingin selalu punya waktu untuk',t:'area'},
-    {k:'jaga_selalu',l:'Aku ingin selalu menjaga',t:'area'},
-    {k:'tidak_korbankan',l:'Aku tidak akan mengorbankan',t:'area'}
-  ]
-},
-
-{
-  id:'c20',
-  num:'20',
-  title:'Core of My Life',
-  sub:'Aku sedang membangun kehidupan di mana...',
-  fields:[
-    {k:'cukup_uang',l:'Aku punya cukup uang untuk',t:'area'},
-    {k:'cukup_waktu',l:'Aku punya cukup waktu untuk',t:'area'},
-    {k:'keluarga_yang',l:'Aku punya keluarga yang',t:'area'},
-    {k:'pekerjaan_yang',l:'Aku punya pekerjaan/bisnis yang',t:'area'},
-    {k:'tubuh_yang',l:'Aku punya tubuh yang',t:'area'},
-    {k:'hubungan_allah_yang',l:'Aku punya hubungan dengan Allah yang',t:'area'},
-    {k:'perempuan_yang',l:'Aku merasa menjadi perempuan yang',t:'area'}
-  ],
-  core:true
+function hexToRgb(h) {
+  h = h.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]
 }
 
-];
-
-
-/* =========================================================
-   CORE VALUES
-========================================================= */
-
-const CORE_VALUES = [
-
-  {
-    n:'Freedom',
-    d:'Aku bebas menentukan bagaimana waktuku digunakan.'
-  },
-
-  {
-    n:'Abundance',
-    d:'Aku hidup dalam kelimpahan, bukan terus-menerus dalam rasa kekurangan.'
-  },
-
-  {
-    n:'Family',
-    d:'Kesuksesanku tidak membuatku kehilangan orang-orang yang paling aku cintai.'
-  },
-
-  {
-    n:'Creation',
-    d:'Ide-ide di kepalaku menjadi sesuatu yang nyata dan bernilai.'
-  },
-
-  {
-    n:'Growth',
-    d:'Aku terus berkembang, tetapi tidak harus terburu-buru.'
-  },
-
-  {
-    n:'Faith',
-    d:'Aku tetap dekat dengan Allah dalam perjalanan mencapai semua ini.'
-  },
-
-  {
-    n:'Joy',
-    d:'Aku tidak menunggu "nanti" untuk menikmati hidup.'
-  }
-
-];
-
-
-/* =========================================================
-   COLOR ARC
-========================================================= */
-
-function hexToRgb(h){
-  h=h.replace('#','');
-
-  return [
-    parseInt(h.substr(0,2),16),
-    parseInt(h.substr(2,2),16),
-    parseInt(h.substr(4,2),16)
-  ];
+function lerp(a, b, t) {
+  let A = hexToRgb(a),
+    B = hexToRgb(b);
+  return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * t).toString(16).padStart(2, '0')).join('')
 }
-
-function rgbToHex(r,g,b){
-  return '#'+[
-    r,g,b
-  ].map(v =>
-    Math.round(v)
-      .toString(16)
-      .padStart(2,'0')
-  ).join('');
-}
-
-function lerpColor(a,b,t){
-
-  const A=hexToRgb(a);
-  const B=hexToRgb(b);
-
-  return rgbToHex(
-    A[0]+(B[0]-A[0])*t,
-    A[1]+(B[1]-A[1])*t,
-    A[2]+(B[2]-A[2])*t
-  );
-}
-
-function accentFor(idx,total){
-
-  const stops=[
-    '#E4A339',
-    '#C65A6B',
-    '#8B4B6B',
-    '#3D3466'
-  ];
-
-  const t=idx/(total-1);
-
-  const seg=t*(stops.length-1);
-
-  const i=Math.min(
-    Math.floor(seg),
-    stops.length-2
-  );
-
-  const localT=seg-i;
-
-  return lerpColor(
-    stops[i],
-    stops[i+1],
-    localT
-  );
-}
-
-CATS.forEach((c,i)=>{
-  c.accent=accentFor(i,CATS.length);
+CATS.forEach((c, i) => {
+  let t = i / (CATS.length - 1),
+    s = t * 3,
+    n = Math.min(Math.floor(s), 2);
+  c.accent = lerp(stops[n], stops[n + 1], s - n)
 });
 
-
-/* =========================================================
-   STATE
-========================================================= */
-
-const state={
-  data:{},
-  loaded:false,
-  editing:{}
+// ======================================================================
+// STATE & PENYIMPANAN — state global + baca/tulis ke localStorage
+// ======================================================================
+const state = {
+  data: {},
+  editing: {}
 };
 
-let currentCat=null;
-
-function emptyData(){
-
+function emptyData() {
   return {
-    values:{},
-    checks:{},
-    images:[]
-  };
-
-}
-
-
-/* =========================================================
-   STORAGE
-========================================================= */
-
-function storageGet(key){
-
-  try{
-
-    const raw=localStorage.getItem(key);
-
-    return raw
-      ? JSON.parse(raw)
-      : null;
-
-  }catch(e){
-
-    return null;
-
+    values: {},
+    checks: {},
+    images: [],
+    custom: [],
+    deleted: {}
   }
-
 }
 
-function storageSet(key,obj){
-
-  try{
-
-    localStorage.setItem(
-      key,
-      JSON.stringify(obj)
-    );
-
-    return true;
-
-  }catch(e){
-
-    console.error('Storage error',e);
-
-    return false;
-
+function normalize(v) {
+  return {
+    values: v?.values || {},
+    checks: v?.checks || {},
+    images: v?.images || [],
+    custom: v?.custom || [],
+    deleted: v?.deleted || {}
   }
-
 }
 
-function storageDelete(key){
-
-  try{
-    localStorage.removeItem(key);
-  }catch(e){}
-
-}
-
-function storageAllCatKeys(){
-
-  try{
-
-    return Object.keys(localStorage)
-      .filter(k=>k.startsWith('cat:'));
-
-  }catch(e){
-
-    return [];
-
-  }
-
-}
-
-async function loadAll(){
-
-  const existingKeys=storageAllCatKeys();
-
-  CATS.forEach(cat=>{
-
-    const key='cat:'+cat.id;
-
-    if(existingKeys.includes(key)){
-
-      const v=storageGet(key);
-
-      state.data[cat.id]=v || emptyData();
-
-    }else{
-
-      state.data[cat.id]=emptyData();
-
+function loadAll() {
+  CATS.forEach(c => {
+    try {
+      state.data[c.id] = normalize(JSON.parse(localStorage.getItem('cat:' + c.id) || 'null'))
+    } catch (e) {
+      state.data[c.id] = emptyData()
     }
-
-  });
-
-  state.loaded=true;
-
+  })
 }
 
-
-/* =========================================================
-   EDITING
-========================================================= */
-
-function editKey(catId,key){
-  return catId+'::'+key;
-}
-
-function beginEdit(catId,key){
-
-  if(!state.editing[catId]){
-    state.editing[catId]={};
-  }
-
-  const d=state.data[catId];
-
-  const cat=CATS.find(c=>c.id===catId);
-
-  const field=cat && cat.fields
-    ? cat.fields.find(f=>f.k===key)
-    : null;
-
-  const draft={
-    value:d.values[key] || '',
-    check:null
-  };
-
-  if(field && field.t==='list'){
-
-    draft.list={};
-
-    for(let i=0;i<field.n;i++){
-
-      draft.list[
-        field.k+'__'+i
-      ] =
-        d.values[
-          field.k+'__'+i
-        ] || '';
-
-    }
-
-  }
-
-  if(d.checks[key]){
-
-    draft.check=
-      JSON.parse(
-        JSON.stringify(
-          d.checks[key]
-        )
-      );
-
-  }
-
-  state.editing[catId][key]=draft;
-
-  renderDetail(cat);
-
-}
-
-function cancelEdit(catId,key){
-
-  if(state.editing[catId]){
-    delete state.editing[catId][key];
-  }
-
-  renderDetail(
-    CATS.find(c=>c.id===catId)
-  );
-
-}
-
-function saveEdit(catId,key){
-
-  const ed=
-    state.editing[catId] &&
-    state.editing[catId][key];
-
-  if(!ed) return;
-
-  const d=state.data[catId];
-
-  if(ed.check){
-
-    d.checks[key]=ed.check;
-
-  }else if(ed.list){
-
-    Object.keys(ed.list).forEach(k=>{
-
-      d.values[k]=ed.list[k] || '';
-
-    });
-
-  }else{
-
-    d.values[key]=ed.value || '';
-
-  }
-
-  delete state.editing[catId][key];
-
-  storageSet(
-    'cat:'+catId,
-    d
-  );
-
-  renderDetail(
-    CATS.find(c=>c.id===catId)
-  );
-
-  renderHome();
-
+function saveCat(id) {
+  localStorage.setItem('cat:' + id, JSON.stringify(state.data[id]));
   flashToast();
-
-}
-
-function isEditing(catId,key){
-
-  return !!(
-    state.editing[catId] &&
-    state.editing[catId][key]
-  );
-
-}
-
-function draftFor(catId,key){
-
-  return state.editing[catId] &&
-    state.editing[catId][key];
-
+  renderHome()
 }
 
 
-/* =========================================================
-   EDIT UI
-========================================================= */
-
-function questionHeader(label,catId,key){
-
-  return `
-    <div class="field-head">
-
-      <label class="field-label">
-        ${escapeHTML(label)}
-      </label>
-
-      <button
-        type="button"
-        class="edit-btn"
-        onclick="beginEdit('${catId}','${escapeAttr(key)}')"
-      >
-        ✎ Edit
-      </button>
-
-    </div>
-  `;
-
+// ======================================================================
+// HELPER — escape HTML & ambil jawaban dari state
+// ======================================================================
+function esc(s) {
+  return String(s || '').replace(/[&<>]/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+  } [m]))
 }
 
-function editorActions(catId,key){
-
-  return `
-    <div class="edit-actions">
-
-      <button
-        type="button"
-        class="cancel-btn"
-        onclick="cancelEdit('${catId}','${escapeAttr(key)}')"
-      >
-        Batal
-      </button>
-
-      <button
-        type="button"
-        class="save-btn"
-        onclick="saveEdit('${catId}','${escapeAttr(key)}')"
-      >
-        ✓ Save
-      </button>
-
-    </div>
-  `;
-
+function attr(s) {
+  return esc(s).replace(/"/g, '&quot;')
 }
 
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function flashToast(){
-
-  const t=
-    document.getElementById('saveToast');
-
-  if(!t) return;
-
-  t.classList.add('show');
-
-  clearTimeout(
-    window.__toastTimer
-  );
-
-  window.__toastTimer=
-    setTimeout(()=>{
-      t.classList.remove('show');
-    },1200);
-
-}
-
-
-/* =========================================================
-   PROGRESS
-========================================================= */
-
-function fieldFilled(cat,field){
-
-  const d=state.data[cat.id];
-
-  if(field.t==='check'){
-
-    const c=d.checks[field.k];
-
-    if(!c) return false;
-
-    return (
-      Object.values(c.opts || {})
-        .some(Boolean)
-      ||
-      !!(c.other && c.other.trim())
-    );
-
+function getAnswer(cat, f) {
+  let d = state.data[cat.id];
+  if (f.t === 'check') {
+    let c = d.checks[f.k] || {},
+      a = (f.opts || []).filter(o => c.opts?.[o]);
+    if (c.other?.trim()) a.push(c.other.trim());
+    return a.join(', ')
   }
-
-  if(field.t==='list'){
-
-    for(let i=0;i<field.n;i++){
-
-      if(
-        (
-          d.values[
-            field.k+'__'+i
-          ] || ''
-        ).trim()
-      ){
-        return true;
-      }
-
-    }
-
-    return false;
-
+  if (f.t === 'list') {
+    return Array.from({
+      length: f.n
+    }, (_, i) => d.values[f.k + '__' + i]).filter(Boolean).map((x, i) => (i + 1) + '. ' + x).join('\n')
   }
-
-  return !!(
-    d.values[field.k] || ''
-  ).trim();
-
+  return (d.values[f.k] || '').trim()
 }
 
-function catProgress(cat){
+function fieldFilled(c, f) {
+  return !!getAnswer(c, f)
+}
 
-  if(cat.timeline){
-
-    const d=state.data[cat.id];
-
-    const filled=
-      TIME_SLOTS.filter(
-        t =>
-          (
-            d.values[
-              'time__'+t
-            ] || ''
-          ).trim()
-      ).length;
-
+function catProgress(c) {
+  let d = state.data[c.id];
+  if (c.timeline) {
+    let x = TIME_SLOTS.filter(t => (d.values['time__' + t] || '').trim()).length + (d.custom || []).filter(x => x.answer?.trim()).length;
     return {
-      filled,
-      total:TIME_SLOTS.length
-    };
-
+      filled: x,
+      total: TIME_SLOTS.length + (d.custom || []).length
+    }
   }
-
-  const total=cat.fields.length;
-
-  const filled=
-    cat.fields.filter(
-      f=>fieldFilled(cat,f)
-    ).length;
-
+  let visible = c.fields.filter(f => !d.deleted?.[f.k]),
+    base = visible.filter(f => fieldFilled(c, f)).length,
+    custom = (d.custom || []).filter(x => x.answer?.trim()).length;
   return {
-    filled,
-    total
-  };
-
+    filled: base + custom,
+    total: visible.length + (d.custom || []).length
+  }
 }
 
-function overallProgress(){
-
-  let filled=0;
-  let total=0;
-
-  CATS.forEach(cat=>{
-
-    const p=catProgress(cat);
-
-    filled+=p.filled;
-    total+=p.total;
-
+function overallProgress() {
+  let a = 0,
+    b = 0;
+  CATS.forEach(c => {
+    let p = catProgress(c);
+    a += p.filled;
+    b += p.total
   });
-
-  return total
-    ? Math.round(
-        filled/total*100
-      )
-    : 0;
-
+  return b ? Math.round(a / b * 100) : 0
 }
 
 
-/* =========================================================
-   HOME
-========================================================= */
-
-function renderHome(){
-
-  const el=
-    document.getElementById(
-      'homeView'
-    );
-
-  const pct=overallProgress();
-
-  const arcDots=
-    CATS.map(
-      c =>
-        `<div
-          class="arc-dot"
-          style="background:${c.accent}"
-        ></div>`
-    ).join('');
-
-  const cards=
-    CATS.map(cat=>{
-
-      const p=catProgress(cat);
-
-      const pctc=
-        p.total
-        ? Math.round(
-            p.filled/p.total*100
-          )
-        : 0;
-
-      const photoCount=
-        (
-          state.data[cat.id].images ||
-          []
-        ).length;
-
-      return `
-        <div
-          class="folder-card"
-          style="--accent:${cat.accent}"
-          onclick="openDetail('${cat.id}')"
-        >
-
-          <div class="folder-num">
-            ${cat.num}
-          </div>
-
-          <div class="folder-body">
-
-            <p class="folder-title">
-              ${escapeHTML(cat.title)}
-
-              ${
-                photoCount
-                ? `
-                  <span class="folder-photo-badge">
-                    ◆ ${photoCount} foto
-                  </span>
-                `
-                : ''
-              }
-
-            </p>
-
-            <p class="folder-sub">
-              ${escapeHTML(cat.sub)}
-            </p>
-
-            <div class="folder-progress">
-              <i style="width:${pctc}%"></i>
-            </div>
-
-          </div>
-
-          <div class="folder-chev">
-            ›
-          </div>
-
-        </div>
-      `;
-
+// ======================================================================
+// RENDER HALAMAN UTAMA — daftar folder + progress
+// ======================================================================
+function renderHome() {
+  let pct = overallProgress(),
+    cards = CATS.map(c => {
+      let p = catProgress(c),
+        pc = p.total ? Math.round(p.filled / p.total * 100) : 0,
+        photos = state.data[c.id].images.length;
+      return `<div class="folder-card" style="--accent:${c.accent}" onclick="openDetail('${c.id}')"><div class="folder-num">${c.num}</div><div class="folder-body"><p class="folder-title">${c.title}${photos?` · ${photos} foto`:''}</p><p class="folder-sub">${c.sub}</p><div class="folder-progress"><i style="width:${pc}%;background:${c.accent}"></i></div></div><div class="folder-chev">›</div></div>`
     }).join('');
+  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">My Tuesday</p><h1 class="hero-title">Kehidupan yang<br>Sedang Aku Bangun</h1><p class="hero-sub">5 tahun dari sekarang.</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">"My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku."</div>`
+}
 
-  el.innerHTML=`
+// ======================================================================
+// BUKA / TUTUP HALAMAN DETAIL FOLDER
+// ======================================================================
+let currentCat = null;
 
-    <div class="home-hero">
+function openDetail(id) {
+  currentCat = id;
+  renderDetail(CATS.find(c => c.id === id));
+  let e = document.getElementById('detailView');
+  e.classList.add('open');
+  e.scrollTop = 0;
+  document.body.style.overflow = 'hidden'
+}
 
-      <p class="eyebrow">
-        My Tuesday
-      </p>
+function closeDetail() {
+  document.getElementById('detailView').classList.remove('open');
+  document.body.style.overflow = '';
+  renderHome()
+}
 
-      <h1 class="hero-title">
-        Kehidupan yang<br>
-        Sedang Aku Bangun
-      </h1>
-
-      <p class="hero-sub">
-        5 tahun dari sekarang.
-      </p>
-
-      <p class="hero-quote">
-        Aku tidak sedang menunggu kehidupan ini terjadi.
-        <span>
-          Aku sedang membangunnya, sedikit demi sedikit.
-        </span>
-      </p>
-
-      <div class="progress-row">
-
-        <div class="progress-track">
-          <div
-            class="progress-fill"
-            style="width:${pct}%"
-          ></div>
-        </div>
-
-        <div class="progress-label">
-          ${pct}% terisi
-        </div>
-
-      </div>
-
-    </div>
-
-    <div class="arc-strip">
-      ${arcDots}
-    </div>
-
-    <div class="folder-list">
-      ${cards}
-    </div>
-
-    <div class="pdf-row">
-
-      <button
-        class="pdf-btn"
-        onclick="exportPDF()"
-      >
-        🖨 Ekspor My Tuesday ke PDF
-      </button>
-
-    </div>
-
-    <div class="backup-row">
-
-      <button
-        class="backup-btn"
-        onclick="exportBackup()"
-      >
-        ⬇ Unduh Cadangan
-      </button>
-
-      <button
-        class="backup-btn"
-        onclick="triggerImport()"
-      >
-        ⬆ Muat Cadangan
-      </button>
-
-      <input
-        type="file"
-        id="importFile"
-        accept="application/json"
-        onchange="importBackup(this.files)"
-      >
-
-    </div>
-
-    <p class="privacy-note">
-      Semua isian dan foto tersimpan hanya di perangkat ini.
-      Tidak dikirim ke server mana pun.
-      Unduh cadangan sesekali supaya isianmu tidak hilang.
-    </p>
-
-    <div class="home-footer">
-
-      "My life is mine.<br>
-      Aku sedang membangun kehidupan yang terasa seperti aku."
-
-    </div>
-
-  `;
-
+function editId(c, k) {
+  return c + '::' + k
 }
 
 
-/* =========================================================
-   DETAIL OPEN / CLOSE
-========================================================= */
-
-function openDetail(catId){
-
-  currentCat=catId;
-
-  const cat=
-    CATS.find(
-      c=>c.id===catId
-    );
-
-  renderDetail(cat);
-
-  document
-    .getElementById('detailView')
-    .classList.add('open');
-
-  document
-    .getElementById('detailView')
-    .scrollTop=0;
-
-  document.body.style.overflow='hidden';
-
-}
-
-function closeDetail(){
-
-  document
-    .getElementById('detailView')
-    .classList.remove('open');
-
-  document.body.style.overflow='';
-
-  renderHome();
-
-}
-
-
-/* =========================================================
-   FIELD HTML
-========================================================= */
-
-function fieldHTML(cat,field){
-
-  const d=
-    state.data[cat.id];
-
-  const editing=
-    isEditing(
-      cat.id,
-      field.k
-    );
-
-  const ed=
-    draftFor(
-      cat.id,
-      field.k
-    );
-
-  const value=
-    editing
-    ? (ed.value || '')
-    : (d.values[field.k] || '');
-
-
-  /* CHECK */
-
-  if(field.t==='check'){
-
-    const c=
-      editing
-      ? (
-          ed.check ||
-          {
-            opts:{},
-            other:''
-          }
-        )
-      : (
-          d.checks[field.k] ||
-          {
-            opts:{},
-            other:''
-          }
-        );
-
-    if(!editing){
-
-      const picked=
-        (field.opts || [])
-          .filter(
-            o =>
-              c.opts &&
-              c.opts[o]
-          );
-
-      if(
-        c.other &&
-        c.other.trim()
-      ){
-        picked.push(
-          c.other.trim()
-        );
-      }
-
-      return `
-
-        <div class="field">
-
-          ${questionHeader(
-            field.l,
-            cat.id,
-            field.k
-          )}
-
-          ${
-            picked.length
-            ?
-            `
-              <div class="answer-checks">
-
-                ${
-                  picked
-                    .map(
-                      x =>
-                        `
-                          <span class="answer-chip">
-                            ${escapeHTML(x)}
-                          </span>
-                        `
-                    )
-                    .join('')
-                }
-
-              </div>
-            `
-            :
-            `
-              <div class="answer-view empty">
-                Belum diisi.
-              </div>
-            `
-          }
-
-        </div>
-
-      `;
-
-    }
-
-
-    const chips=
-      (field.opts || [])
-        .map(opt=>{
-
-          const checked=
-            !!c.opts[opt];
-
-          return `
-
-            <label
-              class="chip ${
-                checked
-                ? 'checked'
-                : ''
-              }"
-            >
-
-              <input
-                type="checkbox"
-                data-cat="${cat.id}"
-                data-key="${escapeAttr(field.k)}"
-                data-kind="draft-check-opt"
-                data-opt="${escapeAttr(opt)}"
-                ${checked ? 'checked' : ''}
-              >
-
-              <span class="dot"></span>
-
-              ${escapeHTML(opt)}
-
-            </label>
-
-          `;
-
-        })
-        .join('');
-
-
-    const otherInput=
-      field.other
-      ?
-      `
-        <input
-          type="text"
-          class="other-input"
-          data-cat="${cat.id}"
-          data-key="${escapeAttr(field.k)}"
-          data-kind="draft-check-other"
-          value="${escapeAttr(c.other || '')}"
-          placeholder="Lainnya: tulis di sini"
-        >
-      `
-      :
-      '';
-
-
-    return `
-
-      <div class="field">
-
-        ${questionHeader(
-          field.l,
-          cat.id,
-          field.k
-        )}
-
-        <div class="check-grid">
-          ${chips}
-        </div>
-
-        ${otherInput}
-
-        ${editorActions(
-          cat.id,
-          field.k
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-
-  /* LIST */
-
-  if(field.t==='list'){
-
-    if(!editing){
-
-      const rows=[];
-
-      for(
-        let i=0;
-        i<field.n;
-        i++
-      ){
-
-        const v=
-          (
-            d.values[
-              field.k+'__'+i
-            ] || ''
-          ).trim();
-
-        if(v){
-
-          rows.push(`
-
-            <div
-              class="answer-view"
-              style="margin-bottom:7px;"
-            >
-              <strong>
-                ${i+1}.
-              </strong>
-              ${escapeHTML(v)}
-            </div>
-
-          `);
-
-        }
-
-      }
-
-      return `
-
-        <div class="field">
-
-          ${questionHeader(
-            field.l,
-            cat.id,
-            field.k
-          )}
-
-          ${
-            rows.length
-            ? rows.join('')
-            :
-            `
-              <div class="answer-view empty">
-                Belum diisi.
-              </div>
-            `
-          }
-
-        </div>
-
-      `;
-
-    }
-
-
-    const rows=[];
-
-    for(
-      let i=0;
-      i<field.n;
-      i++
-    ){
-
-      const k=
-        field.k+'__'+i;
-
-      const v=
-        ed.list
-        ? (
-            ed.list[k] || ''
-          )
-        : (
-            d.values[k] || ''
-          );
-
-      rows.push(`
-
-        <div class="list-item">
-
-          <span class="li-num">
-            ${i+1}
-          </span>
-
-          <input
-            type="text"
-            data-cat="${cat.id}"
-            data-key="${escapeAttr(k)}"
-            data-kind="draft-value"
-            value="${escapeAttr(v)}"
-            placeholder="Tulis di sini..."
-          >
-
-        </div>
-
-      `);
-
-    }
-
-    return `
-
-      <div class="field">
-
-        ${questionHeader(
-          field.l,
-          cat.id,
-          field.k
-        )}
-
-        <div class="list-items">
-          ${rows.join('')}
-        </div>
-
-        ${editorActions(
-          cat.id,
-          field.k
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-
-  /* VIEW */
-
-  if(!editing){
-
-    return `
-
-      <div class="field">
-
-        ${questionHeader(
-          field.l,
-          cat.id,
-          field.k
-        )}
-
-        <div
-          class="answer-view ${
-            value.trim()
-            ? ''
-            : 'empty'
-          }"
-        >
-          ${
-            value.trim()
-            ? escapeHTML(value)
-            : 'Belum diisi.'
-          }
-        </div>
-
-      </div>
-
-    `;
-
-  }
-
-
-  /* MONEY */
-
-  if(field.t==='money'){
-
-    return `
-
-      <div class="field">
-
-        ${questionHeader(
-          field.l,
-          cat.id,
-          field.k
-        )}
-
-        <div class="money-wrap">
-
-          <span>
-            Rp
-          </span>
-
-          <input
-            type="text"
-            inputmode="numeric"
-            data-cat="${cat.id}"
-            data-key="${escapeAttr(field.k)}"
-            data-kind="draft-value"
-            value="${escapeAttr(value)}"
-            placeholder="0 / bulan"
-          >
-
-        </div>
-
-        ${editorActions(
-          cat.id,
-          field.k
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-
-  let cls='';
-
-  if(field.big){
-    cls+=' big';
-  }
-
-  if(field.letter){
-    cls+=' letter';
-  }
-
-
-  /* TEXT */
-
-  if(field.t==='text'){
-
-    return `
-
-      <div class="field">
-
-        ${questionHeader(
-          field.l,
-          cat.id,
-          field.k
-        )}
-
-        <input
-          type="text"
-          data-cat="${cat.id}"
-          data-key="${escapeAttr(field.k)}"
-          data-kind="draft-value"
-          value="${escapeAttr(value)}"
-          placeholder="Tulis di sini..."
-        >
-
-        ${editorActions(
-          cat.id,
-          field.k
-        )}
-
-      </div>
-
-    `;
-
-  }
-
-
-  /* AREA */
-
-  return `
-
-    <div class="field">
-
-      ${questionHeader(
-        field.l,
-        cat.id,
-        field.k
-      )}
-
-      <textarea
-        class="${cls.trim()}"
-        data-cat="${cat.id}"
-        data-key="${escapeAttr(field.k)}"
-        data-kind="draft-value"
-        placeholder="Tulis di sini..."
-      >${escapeHTML(value)}</textarea>
-
-      ${editorActions(
-        cat.id,
-        field.k
-      )}
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   TIMELINE HTML
-========================================================= */
-
-function timelineHTML(cat){
-
-  const d=
-    state.data[cat.id];
-
-  const rows=
-    TIME_SLOTS
-      .map(t=>{
-
-        const key=
-          'time__'+t;
-
-        const editing=
-          isEditing(
-            cat.id,
-            key
-          );
-
-        const ed=
-          draftFor(
-            cat.id,
-            key
-          );
-
-        const v=
-          editing
-          ? (ed.value || '')
-          : (
-              d.values[key] ||
-              ''
-            );
-
-
-        if(!editing){
-
-          return `
-
-            <div class="timeline-slot">
-
-              <div class="tl-time">
-                ${t}
-              </div>
-
-              <div
-                class="tl-input"
-                style="flex:1;"
-              >
-
-                <div class="field-head">
-
-                  <label
-                    class="field-label"
-                    style="padding-top:9px;"
-                  >
-                    Apa yang sedang aku lakukan?
-                  </label>
-
-                  <button
-                    type="button"
-                    class="edit-btn"
-                    onclick="beginEdit('${cat.id}','${key}')"
-                  >
-                    ✎ Edit
-                  </button>
-
-                </div>
-
-                <div
-                  class="answer-view ${
-                    v.trim()
-                    ? ''
-                    : 'empty'
-                  }"
-                >
-                  ${
-                    v.trim()
-                    ? escapeHTML(v)
-                    : 'Belum diisi.'
-                  }
-                </div>
-
-              </div>
-
-            </div>
-
-          `;
-
-        }
-
-
-        return `
-
-          <div class="timeline-slot">
-
-            <div class="tl-time">
-              ${t}
-            </div>
-
-            <div
-              class="tl-input"
-              style="flex:1;"
-            >
-
-              <div class="field-head">
-
-                <label
-                  class="field-label"
-                  style="padding-top:9px;"
-                >
-                  Apa yang sedang aku lakukan?
-                </label>
-
-              </div>
-
-              <textarea
-                data-cat="${cat.id}"
-                data-key="${key}"
-                data-kind="draft-value"
-                placeholder="Apa yang sedang aku lakukan..."
-              >${escapeHTML(v)}</textarea>
-
-              ${editorActions(
-                cat.id,
-                key
-              )}
-
-            </div>
-
-          </div>
-
-        `;
-
-      })
-      .join('');
-
-
-  return `
-
-    <div class="section">
-      ${rows}
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   GALLERY
-========================================================= */
-
-function galleryHTML(cat){
-
-  const imgs=
-    state.data[cat.id].images ||
-    [];
-
-  const items=
-    imgs
-      .map(img=>`
-
-        <div class="gal-item">
-
-          <img
-            src="${img.src}"
-          >
-
-          <button
-            class="gal-del"
-            onclick="deleteImage('${cat.id}','${img.id}')"
-          >
-            ✕
-          </button>
-
-        </div>
-
-      `)
-      .join('');
-
-
-  return `
-
-    <div class="section">
-
-      <div class="gallery-label">
-
-        <label
-          class="field-label"
-          style="margin:0;"
-        >
-          Foto & Inspirasi
-        </label>
-
-      </div>
-
-      <div class="gallery-grid">
-
-        ${items}
-
-        <label class="gal-add">
-
-          <span>
-            +
-          </span>
-
-          Tambah Foto
-
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onchange="handleImages('${cat.id}',this.files)"
-          >
-
-        </label>
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   CORE STATIC
-========================================================= */
-
-function coreStaticHTML(){
-
-  const items=
-    CORE_VALUES
-      .map(v=>`
-
-        <div class="core-item">
-
-          <b>
-            ${escapeHTML(v.n)}
-          </b>
-
-          <span>
-            ${escapeHTML(v.d)}
-          </span>
-
-        </div>
-
-      `)
-      .join('');
-
-
-  return `
-
-    <div class="core-static">
-
-      <h4>
-        My Core
-      </h4>
-
-      ${items}
-
-      <div class="core-final">
-
-        Aku tidak sedang mengejar kehidupan orang lain.
-        <br>
-        Aku sedang membangun kehidupan yang terasa seperti aku.
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   DETAIL RENDER
-========================================================= */
-
-function renderDetail(cat){
-
-  const el=
-    document.getElementById(
-      'detailView'
-    );
-
-  let body='';
-
-
-  if(cat.timeline){
-
-    body=
-      timelineHTML(cat)
-      +
-      galleryHTML(cat);
-
-  }else{
-
-    body=
-      `
-        <div class="section">
-
-          ${
-            cat.fields
-              .map(
-                f=>fieldHTML(cat,f)
-              )
-              .join('')
-          }
-
-        </div>
-      `
-      +
-      galleryHTML(cat);
-
-    if(cat.core){
-
-      body+=`
-
-        <div
-          class="section"
-          style="padding-top:0;"
-        >
-          ${coreStaticHTML()}
-        </div>
-
-      `;
-
-    }
-
-  }
-
-
-  el.innerHTML=`
-
-    <div class="detail-inner">
-
-      <div class="detail-header">
-
-        <button
-          class="back-btn"
-          onclick="closeDetail()"
-        >
-          ←
-        </button>
-
-        <div
-          class="save-toast"
-          id="saveToast"
-        >
-          Tersimpan
-        </div>
-
-      </div>
-
-      <div
-        class="detail-hero"
-        style="--accent:${cat.accent}"
-      >
-
-        <p class="detail-num">
-          ${cat.num} / 20
-        </p>
-
-        <h2 class="detail-title">
-          ${escapeHTML(cat.title)}
-        </h2>
-
-        <p class="detail-sub">
-          ${escapeHTML(cat.sub)}
-        </p>
-
-      </div>
-
-      ${body}
-
-      <div class="danger-zone">
-
-        <button
-          class="danger-btn"
-          onclick="clearCategory('${cat.id}')"
-        >
-          Hapus isian kategori ini
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
-
-  el.style.setProperty(
-    '--accent',
-    cat.accent
-  );
-
-}
-
-
-/* =========================================================
-   EVENTS
-========================================================= */
-
-document.addEventListener(
-  'input',
-  e=>{
-
-    const t=e.target;
-
-    const kind=t.dataset.kind;
-
-
-    if(kind==='draft-value'){
-
-      const catId=
-        t.dataset.cat;
-
-      const key=
-        t.dataset.key;
-
-      let ed=
-        draftFor(
-          catId,
-          key
-        );
-
-
-      if(ed){
-
-        ed.value=t.value;
-
-      }else{
-
-        const cat=
-          CATS.find(
-            c=>c.id===catId
-          );
-
-        const field=
-          cat &&
-          cat.fields
-          ?
-          cat.fields.find(
-            f =>
-              f.t==='list' &&
-              key.startsWith(
-                f.k+'__'
-              )
-          )
-          :
-          null;
-
-
-        if(field){
-
-          ed=
-            draftFor(
-              catId,
-              field.k
-            );
-
-          if(
-            ed &&
-            ed.list
-          ){
-
-            ed.list[key]=
-              t.value;
-
-          }
-
-        }
-
-      }
-
-    }
-
-
-    else if(
-      kind==='draft-check-other'
-    ){
-
-      const catId=
-        t.dataset.cat;
-
-      const key=
-        t.dataset.key;
-
-      const ed=
-        draftFor(
-          catId,
-          key
-        );
-
-      if(ed){
-
-        if(!ed.check){
-
-          ed.check={
-            opts:{},
-            other:''
-          };
-
-        }
-
-        ed.check.other=
-          t.value;
-
-      }
-
-    }
-
-  }
-);
-
-
-document.addEventListener(
-  'change',
-  e=>{
-
-    const t=e.target;
-
-
-    if(
-      t.dataset.kind===
-      'draft-check-opt'
-    ){
-
-      const catId=
-        t.dataset.cat;
-
-      const key=
-        t.dataset.key;
-
-      const opt=
-        t.dataset.opt;
-
-      const ed=
-        draftFor(
-          catId,
-          key
-        );
-
-      if(!ed) return;
-
-
-      if(!ed.check){
-
-        ed.check={
-          opts:{},
-          other:''
-        };
-
-      }
-
-
-      ed.check.opts[opt]=
-        t.checked;
-
-
-      const cat=
-        CATS.find(
-          c=>c.id===catId
-        );
-
-      renderDetail(cat);
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   IMAGES
-========================================================= */
-
-function compressImage(file){
-
-  return new Promise(
-    (resolve,reject)=>{
-
-      const reader=
-        new FileReader();
-
-
-      reader.onload=
-        ev=>{
-
-          const img=
-            new Image();
-
-
-          img.onload=
-            ()=>{
-
-              const maxDim=1000;
-
-              let w=img.width;
-              let h=img.height;
-
-
-              if(
-                w>h &&
-                w>maxDim
-              ){
-
-                h=
-                  h*(maxDim/w);
-
-                w=maxDim;
-
-              }
-
-              else if(
-                h>maxDim
-              ){
-
-                w=
-                  w*(maxDim/h);
-
-                h=maxDim;
-
-              }
-
-
-              const canvas=
-                document.createElement(
-                  'canvas'
-                );
-
-              canvas.width=w;
-              canvas.height=h;
-
-
-              const ctx=
-                canvas.getContext(
-                  '2d'
-                );
-
-              ctx.drawImage(
-                img,
-                0,
-                0,
-                w,
-                h
-              );
-
-
-              resolve(
-                canvas.toDataURL(
-                  'image/jpeg',
-                  .72
-                )
-              );
-
-            };
-
-
-          img.onerror=reject;
-
-          img.src=
-            ev.target.result;
-
-        };
-
-
-      reader.onerror=reject;
-
-      reader.readAsDataURL(file);
-
-    }
-  );
-
-}
-
-
-async function handleImages(
-  catId,
-  files
-){
-
-  const cat=
-    CATS.find(
-      c=>c.id===catId
-    );
-
-
-  for(
-    const file of Array.from(files)
-  ){
-
-    try{
-
-      const dataUrl=
-        await compressImage(file);
-
-
-      state.data[
-        catId
-      ].images.push({
-
-        id:
-          'img_' +
-          Date.now() +
-          '_' +
-          Math.random()
-            .toString(36)
-            .slice(2,7),
-
-        src:dataUrl
-
-      });
-
-    }catch(e){
-
-      console.error(
-        'Image error',
-        e
-      );
-
-    }
-
-  }
-
-
-  storageSet(
-    'cat:'+catId,
-    state.data[catId]
-  );
-
-  renderDetail(cat);
-
-}
-
-
-function deleteImage(
-  catId,
-  imgId
-){
-
-  state.data[catId].images=
-    state.data[catId].images
-      .filter(
-        i=>i.id!==imgId
-      );
-
-
-  storageSet(
-    'cat:'+catId,
-    state.data[catId]
-  );
-
-
-  renderDetail(
-    CATS.find(
-      c=>c.id===catId
-    )
-  );
-
-}
-
-
-/* =========================================================
-   CLEAR CATEGORY
-========================================================= */
-
-async function clearCategory(
-  catId
-){
-
-  if(
-    !confirm(
-      'Hapus semua isian dan foto pada kategori ini? Tindakan ini tidak bisa dibatalkan.'
-    )
-  ){
-
-    return;
-
-  }
-
-
-  state.data[catId]=
-    emptyData();
-
-
-  if(state.editing[catId]){
-
-    delete state.editing[catId];
-
-  }
-
-
-  storageDelete(
-    'cat:'+catId
-  );
-
-
-  renderDetail(
-    CATS.find(
-      c=>c.id===catId
-    )
-  );
-
-  renderHome();
-
-}
-
-
-/* =========================================================
-   BACKUP
-========================================================= */
-
-function exportBackup(){
-
-  const backup={
-    app:'my-tuesday',
-    version:2,
-    exportedAt:
-      new Date().toISOString(),
-    data:state.data
+// ======================================================================
+// MODE EDIT — mulai edit, batal, simpan jawaban
+// ======================================================================
+function beginEdit(cid, key) {
+  let c = CATS.find(x => x.id === cid),
+    d = state.data[cid],
+    f = c.fields?.find(x => x.k === key);
+  state.editing[editId(cid, key)] = {
+    value: d.values[key] || '',
+    check: JSON.parse(JSON.stringify(d.checks[key] || {
+      opts: {},
+      other: ''
+    })),
+    list: f?.t === 'list' ? Object.fromEntries(Array.from({
+      length: f.n
+    }, (_, i) => [key + '__' + i, d.values[key + '__' + i] || ''])) : null
   };
+  renderDetail(c)
+}
 
+function cancelEdit(cid, key) {
+  delete state.editing[editId(cid, key)];
+  renderDetail(CATS.find(c => c.id === cid))
+}
 
-  const blob=
-    new Blob(
-      [
-        JSON.stringify(
-          backup,
-          null,
-          2
-        )
-      ],
-      {
-        type:
-          'application/json'
-      }
-    );
-
-
-  const url=
-    URL.createObjectURL(blob);
-
-
-  const a=
-    document.createElement(
-      'a'
-    );
-
-
-  const stamp=
-    new Date()
-      .toISOString()
-      .slice(0,10);
-
-
-  a.href=url;
-
-  a.download=
-    'my-tuesday-cadangan-' +
-    stamp +
-    '.json';
-
-
-  document.body.appendChild(a);
-
-  a.click();
-
-  document.body.removeChild(a);
-
-  URL.revokeObjectURL(url);
-
+function saveEdit(cid, key) {
+  let e = state.editing[editId(cid, key)],
+    c = CATS.find(x => x.id === cid),
+    f = c.fields?.find(x => x.k === key),
+    d = state.data[cid];
+  if (!e) return;
+  if (f?.t === 'check') d.checks[key] = e.check;
+  else if (f?.t === 'list') Object.assign(d.values, e.list);
+  else d.values[key] = e.value;
+  delete state.editing[editId(cid, key)];
+  saveCat(cid);
+  renderDetail(c)
 }
 
 
-function triggerImport(){
+// ======================================================================
+// RENDER FORM PERTANYAAN — HTML untuk tiap tipe field (text/area/check/list)
+// ======================================================================
+function head(label, c, k) {
+  return `<div class="field-head"><label class="field-label">${esc(label)}</label><div style="display:flex;gap:6px"><button class="edit-btn" onclick="beginEdit('${c}','${attr(k)}')">✎ Edit</button><button class="delete-btn" onclick="deleteBasic('${c}','${attr(k)}')">Hapus</button></div></div>`
+}
 
-  const input=
-    document.getElementById(
-      'importFile'
-    );
+function deleteBasic(cid, key) {
+  if (!confirm('Hapus pertanyaan ini dari folder? Jawaban lama tetap tersimpan di backup tetapi tidak akan ditampilkan.')) return;
+  state.data[cid].deleted = state.data[cid].deleted || {};
+  state.data[cid].deleted[key] = true;
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid));
+  renderHome()
+}
 
-  if(input){
-    input.click();
+function actions(c, k) {
+  return `<div class="edit-actions"><button class="cancel-btn" onclick="cancelEdit('${c}','${attr(k)}')">Batal</button><button class="save-btn" onclick="saveEdit('${c}','${attr(k)}')">✓ Save</button></div>`
+}
+
+function fieldHTML(c, f) {
+  let d = state.data[c.id];
+  if (d.deleted?.[f.k]) return '';
+  let ed = state.editing[editId(c.id, f.k)],
+    editing = !!ed,
+    ans = getAnswer(c, f);
+  if (!editing) return `<div class="field">${head(f.l,c.id,f.k)}<div class="answer-view ${ans?'':'empty'}">${ans?esc(ans):'Belum diisi.'}</div></div>`;
+  if (f.t === 'check') {
+    let chips = (f.opts || []).map(o => `<label class="chip ${ed.check.opts?.[o]?'checked':''}"><input type="checkbox" data-kind="check" data-c="${c.id}" data-k="${attr(f.k)}" data-o="${attr(o)}" ${ed.check.opts?.[o]?'checked':''}>${esc(o)}</label>`).join('');
+    return `<div class="field">${head(f.l,c.id,f.k)}<div class="check-grid">${chips}</div>${f.other?`<input type="text" data-kind="other" data-c="${c.id}" data-k="${attr(f.k)}" value="${attr(ed.check.other||'')}" placeholder="Lainnya...">`:''}${actions(c.id,f.k)}</div>`
   }
+  if (f.t === 'list') {
+    let rows = Array.from({
+      length: f.n
+    }, (_, i) => `<div class="list-item"><span class="li-num">${i+1}</span><input type="text" data-kind="list" data-c="${c.id}" data-parent="${f.k}" data-k="${f.k}__${i}" value="${attr(ed.list[f.k+'__'+i]||'')}" placeholder="Tulis di sini..."></div>`).join('');
+    return `<div class="field">${head(f.l,c.id,f.k)}${rows}${actions(c.id,f.k)}</div>`
+  }
+  let control = f.t === 'text' || f.t === 'money' ? `<input type="text" ${f.t==='money'?'inputmode="numeric"':''} data-kind="value" data-c="${c.id}" data-k="${attr(f.k)}" value="${attr(ed.value)}" placeholder="${f.t==='money'?'0 / bulan':'Tulis di sini...'}">` : `<textarea class="${f.big?'big':''} ${f.letter?'letter':''}" data-kind="value" data-c="${c.id}" data-k="${attr(f.k)}" placeholder="Tulis di sini...">${esc(ed.value)}</textarea>`;
+  if (f.t === 'money') control = `<div class="money-wrap"><span>Rp</span>${control}</div>`;
+  return `<div class="field">${head(f.l,c.id,f.k)}${control}${actions(c.id,f.k)}</div>`
+}
 
+function timelineHTML(c) {
+  let d = state.data[c.id];
+  return `<div class="section">${TIME_SLOTS.map(t=>{let k='time__'+t,e=state.editing[editId(c.id,k)],v=e?e.value:(d.values[k]||'');return`<div class="timeline-slot"><div class="tl-time">${t}</div><div class="tl-input">${e?`<textarea data-kind="value" data-c="${c.id}" data-k="${k}">${esc(v)}</textarea>${actions(c.id,k)}`:`${head('Apa yang sedang aku lakukan?',c.id,k)}<div class="answer-view ${v?'':'empty'}">${v?esc(v):'Belum diisi.'}</div>`}</div></div>`}).join('')}</div>`
 }
 
 
-function importBackup(files){
-
-  const file=
-    files && files[0];
-
-  if(!file) return;
-
-
-  const reader=
-    new FileReader();
-
-
-  reader.onload=
-    ev=>{
-
-      try{
-
-        const parsed=
-          JSON.parse(
-            ev.target.result
-          );
-
-
-        const incoming=
-          parsed &&
-          parsed.data
-          ?
-          parsed.data
-          :
-          parsed;
-
-
-        if(
-          !incoming ||
-          typeof incoming!=='object'
-        ){
-
-          throw new Error(
-            'format tidak dikenali'
-          );
-
-        }
-
-
-        if(
-          !confirm(
-            'Ganti semua isian saat ini dengan isi dari file cadangan ini?'
-          )
-        ){
-
-          return;
-
-        }
-
-
-        CATS.forEach(cat=>{
-
-          const v=
-            incoming[cat.id];
-
-          state.data[cat.id]=
-            v
-            ? v
-            : emptyData();
-
-
-          storageSet(
-            'cat:'+cat.id,
-            state.data[cat.id]
-          );
-
-        });
-
-
-        renderHome();
-
-
-        alert(
-          'Cadangan berhasil dimuat.'
-        );
-
-
-      }catch(e){
-
-        alert(
-          'File cadangan tidak bisa dibaca. Pastikan ini file cadangan dari aplikasi ini.'
-        );
-
-      }
-
-    };
-
-
-  reader.readAsText(file);
-
+// ======================================================================
+// PERTANYAAN TAMBAHAN — tambah/edit/hapus custom question
+// ======================================================================
+function customHTML(c) {
+  let items = state.data[c.id].custom || [];
+  return `<div class="section" style="padding-top:0"><div class="custom-help">Pertanyaan tambahan akan muncul tepat di bawah pertanyaan bawaan dan memiliki format yang sama.</div>${items.map(x=>customCard(c.id,x)).join('')}<button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
 }
 
-
-/* =========================================================
-   STORY ENGINE
-   INI BAGIAN BARU UTAMA UNTUK PDF
-========================================================= */
-
-
-/*
-  Semua fungsi di bawah ini bertugas mengambil
-  jawaban dari form lalu menjahitnya menjadi cerita.
-*/
-
-
-function val(catId,key){
-
-  const d=
-    state.data[catId];
-
-  if(!d) return '';
-
-  return (
-    d.values[key] || ''
-  ).trim();
-
+function customCard(cid, x) {
+  let ed = state.editing[editId(cid, 'custom:' + x.id)];
+  if (ed) return `<div class="field"><div class="field-head"><input type="text" data-kind="custom-q" data-c="${cid}" data-id="${x.id}" value="${attr(ed.q)}" placeholder="Tulis pertanyaan..."></div><textarea data-kind="custom-a" data-c="${cid}" data-id="${x.id}" placeholder="Tulis jawabanmu...">${esc(ed.a)}</textarea><div class="edit-actions"><button class="cancel-btn" onclick="cancelCustom('${cid}','${x.id}')">Batal</button><button class="save-btn" onclick="saveCustom('${cid}','${x.id}')">✓ Save</button></div></div>`;
+  return `<div class="field"><div class="field-head"><label class="field-label">${esc(x.q||'Pertanyaan baru')}</label><div style="display:flex;gap:6px"><button class="edit-btn" onclick="editCustom('${cid}','${x.id}')">✎ Edit</button><button class="delete-btn" onclick="deleteCustom('${cid}','${x.id}')">Hapus</button></div></div><div class="answer-view ${x.answer?.trim()?'':'empty'}">${x.answer?.trim()?esc(x.answer):'Belum diisi.'}</div></div>`
 }
 
-
-function vals(catId,...keys){
-
-  return keys
-    .map(k=>val(catId,k))
-    .filter(Boolean);
-
-}
-
-
-function checks(catId,key){
-
-  const d=
-    state.data[catId];
-
-  if(!d) return [];
-
-  const c=
-    d.checks[key];
-
-  if(!c) return [];
-
-  const cat=
-    CATS.find(
-      x=>x.id===catId
-    );
-
-  const field=
-    cat &&
-    cat.fields
-    ?
-    cat.fields.find(
-      f=>f.k===key
-    )
-    :
-    null;
-
-  let result=[];
-
-
-  if(field && field.opts){
-
-    result=
-      field.opts.filter(
-        o=>
-          c.opts &&
-          c.opts[o]
-      );
-
-  }
-
-
-  if(
-    c.other &&
-    c.other.trim()
-  ){
-
-    result.push(
-      c.other.trim()
-    );
-
-  }
-
-
-  return result;
-
-}
-
-
-function listValues(
-  catId,
-  key,
-  count
-){
-
-  const result=[];
-
-  for(
-    let i=0;
-    i<count;
-    i++
-  ){
-
-    const v=
-      val(
-        catId,
-        key+'__'+i
-      );
-
-    if(v){
-      result.push(v);
-    }
-
-  }
-
-  return result;
-
-}
-
-
-function cleanSentence(text){
-
-  if(!text) return '';
-
-  let s=text.trim();
-
-  if(!s) return '';
-
-  s=s.replace(
-    /\s+/g,
-    ' '
-  );
-
-  s=s.replace(
-    /[.!?]+$/g,
-    ''
-  );
-
-  return s;
-
-}
-
-
-function sentence(text){
-
-  const s=
-    cleanSentence(text);
-
-  return s
-    ? s+'.'
-    : '';
-
-}
-
-
-function joinNatural(arr){
-
-  const a=
-    arr
-      .filter(Boolean)
-      .map(x=>cleanSentence(x))
-      .filter(Boolean);
-
-  if(!a.length) return '';
-
-  if(a.length===1){
-    return a[0]+'.';
-  }
-
-  if(a.length===2){
-    return a[0]+' dan '+a[1]+'.';
-  }
-
-  return (
-    a.slice(0,-1).join(', ')
-    +
-    ', dan '
-    +
-    a[a.length-1]
-    +
-    '.'
-  );
-
-}
-
-
-function paragraph(...sentences){
-
-  return sentences
-    .filter(Boolean)
-    .map(s=>{
-
-      const x=
-        cleanSentence(s);
-
-      return x
-        ? x+'.'
-        : '';
-
-    })
-    .filter(Boolean)
-    .join(' ');
-
-}
-
-
-/* =========================================================
-   STORY 01 — PAGI
-========================================================= */
-
-function storyMorning(){
-
-  const jam=
-    val('c1','jam_bangun');
-
-  const pertama=
-    val('c1','hal_pertama');
-
-  const perasaan=
-    val('c1','perasaan_bangun');
-
-  const tenang=
-    val('c1','alasan_tenang');
-
-  const kamar=
-    val('c1','suasana_kamar');
-
-  const cahaya=
-    val('c1','cahaya_pagi');
-
-  const syukur=
-    val('c1','syukur_pagi');
-
-
-  const paras=[];
-
-
-  if(jam){
-
-    paras.push(
-      paragraph(
-        `Aku bangun pukul ${jam}`
-      )
-    );
-
-  }else{
-
-    paras.push(
-      'Pagi di rumah ini dimulai dengan tenang'
-    );
-
-  }
-
-
-  if(perasaan){
-
-    paras.push(
-      paragraph(
-        `Aku bangun dengan perasaan ${perasaan}`
-      )
-    );
-
-  }
-
-
-  if(pertama){
-
-    paras.push(
-      sentence(
-        pertama
-      )
-    );
-
-  }
-
-
-  if(tenang){
-
-    paras.push(
-      paragraph(
-        `Aku tidak terburu-buru karena ${cleanSentence(tenang)}`
-      )
-    );
-
-  }
-
-
-  if(kamar){
-
-    paras.push(
-      paragraph(
-        `Kamar tidurku ${cleanSentence(kamar)}`
-      )
-    );
-
-  }
-
-
-  if(cahaya){
-
-    paras.push(
-      paragraph(
-        `Cahaya pagi yang masuk ke kamar ${cleanSentence(cahaya)}`
-      )
-    );
-
-  }
-
-
-  if(syukur){
-
-    paras.push(
-      paragraph(
-        `Hal pertama yang membuatku bersyukur pagi ini adalah ${cleanSentence(syukur)}`
-      )
-    );
-
-  }
-
-
-  return paras.join(' ');
-
-}
-
-
-/* =========================================================
-   STORY 02 — ALLAH
-========================================================= */
-
-function storyFaith(){
-
-  const ibadah=
-    checks('c2','ibadah');
-
-  const hubungan=
-    val(
-      'c2',
-      'hubungan_spiritual'
-    );
-
-  const rasa=
-    val(
-      'c2',
-      'rasa_ibadah'
-    );
-
-  const doa=
-    val(
-      'c2',
-      'doa_sering'
-    );
-
-
-  const parts=[];
-
-
-  if(ibadah.length){
-
-    parts.push(
-      `Setelah bangun, aku meluangkan waktu untuk ${joinNatural(ibadah).replace(/\.$/,'')}`
-    );
-
-  }
-
-
-  if(hubungan){
-
-    parts.push(
-      `Hubunganku dengan Allah sekarang terasa ${cleanSentence(hubungan)}`
-    );
-
-  }
-
-
-  if(rasa){
-
-    parts.push(
-      `Dalam ibadah, hal yang paling ingin dan paling sering kurasakan adalah ${cleanSentence(rasa)}`
-    );
-
-  }
-
-
-  if(doa){
-
-    parts.push(
-      `Ada doa yang terus kubawa dalam perjalanan hidup ini: ${cleanSentence(doa)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 03 — HEALTH
-========================================================= */
-
-function storyHealth(){
-
-  const tubuh=
-    val('c3','tubuh_terasa');
-
-  const kondisi=
-    val('c3','kondisi_fisik');
-
-  const olahraga=
-    val('c3','olahraga');
-
-  const jamOlahraga=
-    val('c3','jam_olahraga');
-
-  const makan=
-    val('c3','cara_makan');
-
-  const tidur=
-    val('c3','jam_tidur');
-
-  const cermin=
-    val('c3','cermin');
-
-  const rawat=
-    val('c3','rawat_diri');
-
-
-  const parts=[];
-
-
-  if(tubuh){
-
-    parts.push(
-      `Tubuhku terasa ${cleanSentence(tubuh)}`
-    );
-
-  }
-
-
-  if(kondisi){
-
-    parts.push(
-      `Kondisi fisik yang membuatku nyaman adalah ${cleanSentence(kondisi)}`
-    );
-
-  }
-
-
-  if(olahraga){
-
-    let s=
-      `Aku rutin berolahraga dengan ${cleanSentence(olahraga)}`;
-
-    if(jamOlahraga){
-
-      s+=
-        `, biasanya sekitar pukul ${cleanSentence(jamOlahraga)}`;
-
-    }
-
-    parts.push(s);
-
-  }
-
-
-  if(makan){
-
-    parts.push(
-      `Aku makan dengan cara ${cleanSentence(makan)}`
-    );
-
-  }
-
-
-  if(tidur){
-
-    parts.push(
-      `Aku biasanya tidur sekitar pukul ${cleanSentence(tidur)}`
-    );
-
-  }
-
-
-  if(cermin){
-
-    parts.push(
-      `Ketika melihat diriku di cermin, aku merasa ${cleanSentence(cermin)}`
-    );
-
-  }
-
-
-  if(rawat){
-
-    parts.push(
-      `Aku merawat tubuhku dengan ${cleanSentence(rawat)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 04 — SELF CARE
-========================================================= */
-
-function storySelfCare(){
-
-  const setelah=
-    val('c4','setelah_olahraga');
-
-  const body=
-    val('c4','body_care');
-
-  const skin=
-    val('c4','skincare');
-
-  const parfum=
-    val('c4','parfum');
-
-  const akuBanget=
-    val('c4','aku_banget');
-
-  const beli=
-    val('c4','beli_barang');
-
-  const tidakBersalah=
-    val('c4','tidak_bersalah_beli');
-
-
-  const parts=[];
-
-
-  if(setelah){
-
-    parts.push(
-      `Setelah olahraga aku ${cleanSentence(setelah)}`
-    );
-
-  }
-
-
-  if(body){
-
-    parts.push(
-      `Untuk merawat diri, aku menggunakan ${cleanSentence(body)}`
-    );
-
-  }
-
-
-  if(skin){
-
-    parts.push(
-      `Skincare-ku ${cleanSentence(skin)}`
-    );
-
-  }
-
-
-  if(parfum){
-
-    parts.push(
-      `Parfum yang kupakai adalah ${cleanSentence(parfum)}`
-    );
-
-  }
-
-
-  if(akuBanget){
-
-    parts.push(
-      `Ada hal-hal kecil yang membuatku merasa sangat menjadi diriku sendiri: ${cleanSentence(akuBanget)}`
-    );
-
-  }
-
-
-  if(beli){
-
-    parts.push(
-      `Ketika membeli sesuatu yang kusukai, aku melakukannya dengan perasaan ${cleanSentence(beli)}`
-    );
-
-  }
-
-
-  if(tidakBersalah){
-
-    parts.push(
-      `Aku tidak lagi merasa bersalah ketika ${cleanSentence(tidakBersalah)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 05 — HOME
-========================================================= */
-
-function storyHome(){
-
-  const tinggal=
-    checks('c5','tinggal');
-
-  const lokasi=
-    val('c5','lokasi');
-
-  const rumah=
-    val('c5','rumah_seperti');
-
-  const gaya=
-    val('c5','gaya_rumah');
-
-  const warna=
-    val('c5','warna_dominan');
-
-  const ruangan=
-    val('c5','ruangan_favorit');
-
-  const suka=
-    val('c5','hal_disuka_rumah');
-
-  const fasilitas=
-    checks('c5','fasilitas');
-
-  const malam=
-    val('c5','suasana_malam');
-
-
-  const parts=[];
-
-
-  if(tinggal.length){
-
-    parts.push(
-      `Aku tinggal di ${joinNatural(tinggal).replace(/\.$/,'')}`
-    );
-
-  }
-
-
-  if(lokasi){
-
-    parts.push(
-      `Rumah itu berada di ${cleanSentence(lokasi)}`
-    );
-
-  }
-
-
-  if(rumah){
-
-    parts.push(
-      `Rumahku ${cleanSentence(rumah)}`
-    );
-
-  }
-
-
-  if(gaya){
-
-    parts.push(
-      `Gaya rumahnya ${cleanSentence(gaya)}`
-    );
-
-  }
-
-
-  if(warna){
-
-    parts.push(
-      `Warna yang dominan adalah ${cleanSentence(warna)}`
-    );
-
-  }
-
-
-  if(ruangan){
-
-    parts.push(
-      `Ruangan favoritku adalah ${cleanSentence(ruangan)}`
-    );
-
-  }
-
-
-  if(suka){
-
-    parts.push(
-      `Hal yang paling kusukai dari rumah ini adalah ${cleanSentence(suka)}`
-    );
-
-  }
-
-
-  if(fasilitas.length){
-
-    parts.push(
-      `Di rumah ini ada ${joinNatural(fasilitas).replace(/\.$/,'')}`
-    );
-
-  }
-
-
-  if(malam){
-
-    parts.push(
-      `Pada malam hari, suasananya ${cleanSentence(malam)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 06 — HUSBAND
-========================================================= */
-
-function storyMarriage(){
-
-  const pagi=
-    val('c6','pagi_bersama');
-
-  const ngobrol=
-    val('c6','ngobrol');
-
-  const hubungan=
-    val('c6','hubungan_terasa');
-
-  const waktu=
-    val('c6','waktu_berdua');
-
-  const pergi=
-    val('c6','pergi_berdua');
-
-  const syukur=
-    val('c6','syukur_pernikahan');
-
-  const pasangan=
-    val('c6','jadi_pasangan');
-
-
-  const parts=[];
-
-
-  if(pagi){
-
-    parts.push(
-      `Pagi hari aku dan suamiku biasanya ${cleanSentence(pagi)}`
-    );
-
-  }
-
-
-  if(ngobrol){
-
-    parts.push(
-      `Kami ngobrol tentang ${cleanSentence(ngobrol)}`
-    );
-
-  }
-
-
-  if(hubungan){
-
-    parts.push(
-      `Hubungan kami terasa ${cleanSentence(hubungan)}`
-    );
-
-  }
-
-
-  if(waktu){
-
-    parts.push(
-      `Kami selalu berusaha punya waktu berdua untuk ${cleanSentence(waktu)}`
-    );
-
-  }
-
-
-  if(pergi){
-
-    parts.push(
-      `Sesekali kami pergi berdua ke ${cleanSentence(pergi)}`
-    );
-
-  }
-
-
-  if(syukur){
-
-    parts.push(
-      `Hal yang paling kusyukuri dari pernikahan ini adalah ${cleanSentence(syukur)}`
-    );
-
-  }
-
-
-  if(pasangan){
-
-    parts.push(
-      `Aku ingin terus menjadi pasangan yang ${cleanSentence(pasangan)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 07 — CHILDREN
-========================================================= */
-
-function storyChildren(){
-
-  const usia=
-    val('c7','usia_anak');
-
-  const seperti=
-    val('c7','anak_seperti');
-
-  const hubungan=
-    val('c7','hubungan_anak');
-
-  const ibu=
-    val('c7','jadi_ibu');
-
-  const aktivitas=
-    val('c7','aktivitas_bersama');
-
-  const diingat=
-    val('c7','diingat_sebagai');
-
-  const waktu=
-    checks('c7','waktu_untuk_anak');
-
-  const tidakLewat=
-    val('c7','tidak_melewatkan');
-
-
-  const parts=[];
-
-
-  if(usia){
-
-    parts.push(
-      `Anak-anakku sekarang berusia ${cleanSentence(usia)}`
-    );
-
-  }
-
-
-  if(seperti){
-
-    parts.push(
-      `Mereka ${cleanSentence(seperti)}`
-    );
-
-  }
-
-
-  if(hubungan){
-
-    parts.push(
-      `Hubunganku dengan mereka ${cleanSentence(hubungan)}`
-    );
-
-  }
-
-
-  if(ibu){
-
-    parts.push(
-      `Aku ingin menjadi ibu yang ${cleanSentence(ibu)}`
-    );
-
-  }
-
-
-  if(aktivitas){
-
-    parts.push(
-      `Kami sering menghabiskan waktu dengan ${cleanSentence(aktivitas)}`
-    );
-
-  }
-
-
-  if(waktu.length){
-
-    parts.push(
-      `Aku masih punya waktu untuk ${joinNatural(waktu).replace(/\.$/,'')}`
-    );
-
-  }
-
-
-  if(diingat){
-
-    parts.push(
-      `Aku ingin mereka mengingat masa kecil mereka sebagai masa yang ${cleanSentence(diingat)}`
-    );
-
-  }
-
-
-  if(tidakLewat){
-
-    parts.push(
-      `Ada satu hal yang tidak ingin kulewatkan: ${cleanSentence(tidakLewat)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 08 — MORNING BEFORE WORK
-========================================================= */
-
-function storyBeforeWork(){
-
-  const siap=
-    val('c8','setelah_anak_siap');
-
-  const antar=
-    checks('c8','antar');
-
-  const setelah=
-    val('c8','setelah_itu');
-
-  const pergi=
-    val('c8','pergi_ke');
-
-  const kopi=
-    val('c8','kopi');
-
-  const bicara=
-    val('c8','membicarakan');
-
-  const bisnis=
-    val('c8','bisnis_dibahas');
-
-  const waktu=
-    val('c8','punya_waktu_karena');
-
-
-  const parts=[];
-
-
-  if(siap){
-
-    parts.push(
-      `Setelah anak-anak siap sekolah, aku ${cleanSentence(siap)}`
-    );
-
-  }
-
-
-  if(antar.length){
-
-    parts.push(
-      `Untuk urusan sekolah, aku ${joinNatural(antar).replace(/\.$/,'').toLowerCase()}`
-    );
-
-  }
-
-
-  if(setelah){
-
-    parts.push(
-      `Setelah itu aku dan suamiku ${cleanSentence(setelah)}`
-    );
-
-  }
-
-
-  if(pergi){
-
-    parts.push(
-      `Kami pergi ke ${cleanSentence(pergi)}`
-    );
-
-  }
-
-
-  if(kopi){
-
-    parts.push(
-      `Aku menikmati ${cleanSentence(kopi)}`
-    );
-
-  }
-
-
-  if(bicara){
-
-    parts.push(
-      `Kami membicarakan ${cleanSentence(bicara)}`
-    );
-
-  }
-
-
-  if(bisnis){
-
-    parts.push(
-      `Hari ini salah satu hal yang sedang kami bahas adalah ${cleanSentence(bisnis)}`
-    );
-
-  }
-
-
-  if(waktu){
-
-    parts.push(
-      `Aku merasa punya waktu karena ${cleanSentence(waktu)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 09 — WORK
-========================================================= */
-
-function storyWork(){
-
-  const pekerjaan=
-    val('c9','bekerja_sebagai');
-
-  const jenis=
-    checks('c9','jenis_usaha');
-
-  const nama=
-    val('c9','nama_bidang');
-
-  const jual=
-    val('c9','jual_apa');
-
-  const target=
-    val('c9','target_customer');
-
-  const peran=
-    checks('c9','peran_utama');
-
-  const delegasi=
-    val('c9','tidak_dikerjakan_sendiri');
-
-  const orang=
-    val('c9','orang_bersama');
-
-  const kantor=
-    val('c9','alasan_kantor');
-
-  const tidakKantor=
-    val('c9','alasan_tidak_kantor');
-
-  const jam=
-    val('c9','jam_kerja');
-
-  const bebas=
-    val('c9','bebas_ubah_jadwal');
-
-
-  const parts=[];
-
-
-  if(pekerjaan){
-
-    parts.push(
-      `Aku bekerja sebagai ${cleanSentence(pekerjaan)}`
-    );
-
-  }
-
-
-  if(jenis.length){
-
-    parts.push(
-      `Aku punya ${joinNatural(jenis).replace(/\.$/,'').toLowerCase()}`
-    );
-
-  }
-
-
-  if(nama){
-
-    parts.push(
-      `Bisnis atau pekerjaan utamaku bergerak di bidang ${cleanSentence(nama)}`
-    );
-
-  }
-
-
-  if(jual){
-
-    parts.push(
-      `Yang kami tawarkan adalah ${cleanSentence(jual)}`
-    );
-
-  }
-
-
-  if(target){
-
-    parts.push(
-      `Kami melayani ${cleanSentence(target)}`
-    );
-
-  }
-
-
-  if(peran.length){
-
-    parts.push(
-      `Peranku terutama berada pada ${joinNatural(peran).replace(/\.$/,'').toLowerCase()}`
-    );
-
-  }
-
-
-  if(delegasi){
-
-    parts.push(
-      `Aku tidak lagi mengerjakan semuanya sendiri. ${sentence(delegasi)}`
-    );
-
-  }
-
-
-  if(orang){
-
-    parts.push(
-      `Aku bekerja bersama ${cleanSentence(orang)}`
-    );
-
-  }
-
-
-  if(kantor){
-
-    parts.push(
-      `Aku pergi ke kantor ketika ${cleanSentence(kantor)}`
-    );
-
-  }
-
-
-  if(tidakKantor){
-
-    parts.push(
-      `Dan aku tidak perlu pergi ke kantor ketika ${cleanSentence(tidakKantor)}`
-    );
-
-  }
-
-
-  if(jam){
-
-    parts.push(
-      `Jam kerjaku biasanya ${cleanSentence(jam)}`
-    );
-
-  }
-
-
-  if(bebas){
-
-    parts.push(
-      `Aku bebas mengubah jadwalku ketika ${cleanSentence(bebas)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 10 — BUSINESS
-========================================================= */
-
-function storyBusiness(){
-
-  const bidang=
-    listValues(
-      'c10',
-      'bidang_bisnis',
-      3
-    );
-
-  const sumber=
-    val('c10','sumber_penghasilan');
-
-  const favorit=
-    val('c10','bagian_favorit');
-
-  const dibantu=
-    checks('c10','dibantu');
-
-  const founder=
-    val('c10','waktu_founder');
-
-  const ide=
-    val('c10','menemukan_ide');
-
-  const sistem=
-    val('c10','sistem_ide');
-
-  const tinggalkan=
-    val('c10','tidak_tinggalkan_ide');
-
-
-  const parts=[];
-
-
-  if(bidang.length){
-
-    parts.push(
-      `Aku membangun bisnis di bidang ${joinNatural(bidang).replace(/\.$/,'')}`
-    );
-
-  }
-
-
-  if(sumber){
-
-    parts.push(
-      `Sumber penghasilan bisnis ini berasal dari ${cleanSentence(sumber)}`
-    );
-
-  }
-
-
-  if(favorit){
-
-    parts.push(
-      `Bagian yang paling kusukai adalah ${cleanSentence(favorit)}`
-    );
-
-  }
-
-
-  if(dibantu.length){
-
-    parts.push(
-      `Aku tidak membangun semuanya sendirian. Ada orang-orang yang membantu di bidang ${joinNatural(dibantu).replace(/\.$/,'').toLowerCase()}`
-    );
-
-  }
-
-
-  if(founder){
-
-    parts.push(
-      `Sebagai founder, sebagian besar waktuku kuhabiskan untuk ${cleanSentence(founder)}`
-    );
-
-  }
-
-
-  if(ide){
-
-    parts.push(
-      `Ide bisnis baru biasanya datang ketika ${cleanSentence(ide)}`
-    );
-
-  }
-
-
-  if(sistem){
-
-    parts.push(
-      `Ketika punya ide baru, aku mengikuti sistem: ${cleanSentence(sistem)}`
-    );
-
-  }
-
-
-  if(tinggalkan){
-
-    parts.push(
-      `Aku tidak lagi meninggalkan ide hanya karena ${cleanSentence(tinggalkan)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 11 — MONEY
-========================================================= */
-
-function storyMoney(){
-
-  const keluarga=
-    val('c11','penghasilan_keluarga');
-
-  const pribadi=
-    val('c11','penghasilan_pribadi');
-
-  const bisnis=
-    val('c11','penghasilan_bisnis');
-
-  const investasi=
-    val('c11','penghasilan_investasi');
-
-  const aset=
-    checks('c11','aset');
-
-  const aman=
-    val('c11','aman_finansial');
-
-  const beli=
-    val('c11','beli_tanpa_khawatir');
-
-  const tidakLagi=
-    val('c11','tidak_lagi_perasaan');
-
-
-  const parts=[];
-
-
-  if(keluarga){
-
-    parts.push(
-      `Secara finansial, penghasilan keluarga yang kubayangkan sekitar ${cleanSentence(keluarga)} per bulan`
-    );
-
-  }
-
-
-  if(pribadi){
-
-    parts.push(
-      `Penghasilan pribadiku sekitar ${cleanSentence(pribadi)}`
-    );
-
-  }
-
-
-  if(bisnis){
-
-    parts.push(
-      `Dari bisnis, aku menghasilkan sekitar ${cleanSentence(bisnis)}`
-    );
-
-  }
-
-
-  if(investasi){
-
-    parts.push(
-      `Aset dan investasiku juga menghasilkan sekitar ${cleanSentence(investasi)}`
-    );
-
-  }
-
-
-  if(aset.length){
-
-    parts.push(
-      `Aku memiliki ${joinNatural(aset).replace(/\.$/,'').toLowerCase()}`
-    );
-
-  }
-
-
-  if(aman){
-
-    parts.push(
-      `Aku merasa aman secara finansial karena ${cleanSentence(aman)}`
-    );
-
-  }
-
-
-  if(beli){
-
-    parts.push(
-      `Aku bisa membeli sesuatu yang kuinginkan tanpa khawatir ketika ${cleanSentence(beli)}`
-    );
-
-  }
-
-
-  if(tidakLagi){
-
-    parts.push(
-      `Aku tidak lagi hidup dengan perasaan ${cleanSentence(tidakLagi)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 12 — LIFESTYLE
-========================================================= */
-
-function storyLifestyle(){
-
-  const mobil=
-    val('c12','mobil');
-
-  const liburan=
-    val('c12','liburan');
-
-  const kali=
-    val('c12','kali_setahun');
-
-  const destinasi=
-    val('c12','destinasi');
-
-  const menikmati=
-    checks('c12','dinikmati');
-
-  const kecil=
-    val('c12','tanpa_bersalah_kecil');
-
-
-  const parts=[];
-
-
-  if(mobil){
-
-    parts.push(
-      `Aku punya mobil ${cleanSentence(mobil)}`
-    );
-
-  }
-
-
-  if(liburan){
-
-    parts.push(
-      `Aku pergi liburan ${cleanSentence(liburan)}`
-    );
-
-  }
-
-
-  if(kali){
-
-    parts.push(
-      `Dalam setahun aku bepergian sekitar ${cleanSentence(kali)} kali`
-    );
-
-  }
-
-
-  if(destinasi){
-
-    parts.push(
-      `Destinasi yang sering kukunjungi adalah ${cleanSentence(destinasi)}`
-    );
-
-  }
-
-
-  if(menikmati.length){
-
-    parts.push(
-      `Aku menikmati ${joinNatural(menikmati).replace(/\.$/,'').toLowerCase()}`
-    );
-
-  }
-
-
-  if(kecil){
-
-    parts.push(
-      `Hal-hal kecil yang sekarang bisa kunikmati tanpa merasa bersalah adalah ${cleanSentence(kecil)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 13 — RELATIONSHIPS
-========================================================= */
-
-function storyRelationships(){
-
-  const sekitar=
-    val('c13','orang_sekitar');
-
-  const teman=
-    val('c13','teman_seperti');
-
-  const sering=
-    val('c13','lebih_sering');
-
-  const lingkungan=
-    val('c13','lingkungan_seperti');
-
-  const inspirasi=
-    val('c13','menginspirasi');
-
-  const jadi=
-    val('c13','jadi_orang');
-
-
-  const parts=[];
-
-
-  if(sekitar){
-
-    parts.push(
-      `Orang-orang di sekitarku adalah ${cleanSentence(sekitar)}`
-    );
-
-  }
-
-
-  if(teman){
-
-    parts.push(
-      `Aku punya teman yang ${cleanSentence(teman)}`
-    );
-
-  }
-
-
-  if(sering){
-
-    parts.push(
-      `Aku ingin lebih sering ${cleanSentence(sering)}`
-    );
-
-  }
-
-
-  if(lingkungan){
-
-    parts.push(
-      `Aku memilih berada di lingkungan yang ${cleanSentence(lingkungan)}`
-    );
-
-  }
-
-
-  if(inspirasi){
-
-    parts.push(
-      `Aku dikelilingi orang-orang yang menginspirasiku, terutama ${cleanSentence(inspirasi)}`
-    );
-
-  }
-
-
-  if(jadi){
-
-    parts.push(
-      `Semua lingkungan ini ikut membentukku menjadi orang yang ${cleanSentence(jadi)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 14 — SELF
-========================================================= */
-
-function storySelf(){
-
-  const diri=
-    val('c14','diriku_5th');
-
-  const sifat=
-    checks('c14','sifat');
-
-  const sulit=
-    val('c14','dulu_sulit');
-
-  const berhenti=
-    val('c14','berhenti_merasa');
-
-  const berani=
-    val('c14','sudah_berani');
-
-  const bangga=
-    val('c14','bangga_diri14');
-
-
-  const parts=[];
-
-
-  if(diri){
-
-    parts.push(
-      `Lima tahun dari sekarang, aku adalah perempuan yang ${cleanSentence(diri)}`
-    );
-
-  }
-
-
-  if(sifat.length){
-
-    parts.push(
-      `Aku lebih ${joinNatural(sifat).replace(/\.$/,'').toLowerCase()}`
-    );
-
-  }
-
-
-  if(sulit){
-
-    parts.push(
-      `Hal yang dulu sangat sulit bagiku tetapi sekarang sudah biasa adalah ${cleanSentence(sulit)}`
-    );
-
-  }
-
-
-  if(berhenti){
-
-    parts.push(
-      `Aku sudah berhenti merasa ${cleanSentence(berhenti)}`
-    );
-
-  }
-
-
-  if(berani){
-
-    parts.push(
-      `Aku sudah berani ${cleanSentence(berani)}`
-    );
-
-  }
-
-
-  if(bangga){
-
-    parts.push(
-      `Dan aku bangga kepada diriku karena ${cleanSentence(bangga)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 15 — TIMELINE
-========================================================= */
-
-function timelineStory(){
-
-  const d=
-    state.data.c15;
-
-  const rows=[];
-
-  TIME_SLOTS.forEach(time=>{
-
-    const text=
-      (
-        d.values[
-          'time__'+time
-        ] || ''
-      ).trim();
-
-    if(text){
-
-      rows.push({
-        time,
-        text
-      });
-
-    }
-
+function addCustom(cid) {
+  let id = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  state.data[cid].custom.push({
+    id,
+    q: '',
+    answer: ''
   });
+  state.editing[editId(cid, 'custom:' + id)] = {
+    q: '',
+    a: ''
+  };
+  renderDetail(CATS.find(c => c.id === cid))
+}
 
+function editCustom(cid, id) {
+  let x = state.data[cid].custom.find(x => x.id === id);
+  state.editing[editId(cid, 'custom:' + id)] = {
+    q: x.q || '',
+    a: x.answer || ''
+  };
+  renderDetail(CATS.find(c => c.id === cid))
+}
 
-  if(!rows.length){
-    return '';
-  }
+function cancelCustom(cid, id) {
+  delete state.editing[editId(cid, 'custom:' + id)];
+  renderDetail(CATS.find(c => c.id === cid))
+}
 
+function saveCustom(cid, id) {
+  let ed = state.editing[editId(cid, 'custom:' + id)],
+    x = state.data[cid].custom.find(x => x.id === id);
+  if (!ed || !x) return;
+  x.q = ed.q.trim() || 'Pertanyaan baru';
+  x.answer = ed.a;
+  delete state.editing[editId(cid, 'custom:' + id)];
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid))
+}
 
-  return rows
-    .map(r=>`
-
-      <div class="timeline-story-row">
-
-        <div class="timeline-story-time">
-          ${escapeHTML(r.time)}
-        </div>
-
-        <div class="timeline-story-text">
-          ${escapeHTML(r.text)}
-        </div>
-
-      </div>
-
-    `)
-    .join('');
-
+function deleteCustom(cid, id) {
+  if (!confirm('Hapus pertanyaan ini?')) return;
+  state.data[cid].custom = state.data[cid].custom.filter(x => x.id !== id);
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid));
+  renderHome()
 }
 
 
-/* =========================================================
-   STORY 16 — FEELINGS
-========================================================= */
+// ======================================================================
+// GALERI FOTO & RENDER DETAIL LENGKAP
+// ======================================================================
+function galleryHTML(c) {
+  let imgs = state.data[c.id].images;
+  return `<div class="section"><div class="field-label" style="margin-bottom:10px">Foto & Inspirasi</div><div class="gallery-grid">${imgs.map(i=>`<div class="gal-item"><img src="${i.src}"><button class="gal-del" onclick="deleteImage('${c.id}','${i.id}')">✕</button></div>`).join('')}<label class="gal-add"><span>+</span>Tambah Foto<input type="file" accept="image/*" multiple onchange="handleImages('${c.id}',this.files)"></label></div></div>`
+}
 
-function storyFeelings(){
+function renderDetail(c) {
+  let body = c.timeline ? timelineHTML(c) : `<div class="section">${c.fields.map(f=>fieldHTML(c,f)).join('')}</div>`;
+  body += customHTML(c) + galleryHTML(c);
+  document.getElementById('detailView').innerHTML = `<div class="detail-inner"><div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><div class="save-toast" id="saveToast">Tersimpan</div></div><div class="detail-hero"><p class="detail-num">${c.num==='00'?'Sampul':c.num+' / 18'}</p><h2 class="detail-title">${c.title}</h2><p class="detail-sub">${c.sub}</p></div>${body}<div class="danger-zone"><button class="danger-btn" onclick="clearCategory('${c.id}')">Hapus isian kategori ini</button></div></div>`;
+  document.getElementById('detailView').style.setProperty('--accent', c.accent)
+}
 
-  const hari=
-    val('c16','perasaan_hari');
-
-  const bebas=
-    val('c16','bebas_karena');
-
-  const kaya=
-    val('c16','kaya_karena');
-
-  const berhasil=
-    val('c16','berhasil_karena');
-
-  const tenang=
-    val('c16','tenang_karena');
-
-  const keluarga=
-    val('c16','dekat_keluarga');
-
-  const bangga=
-    val('c16','bangga_karena16');
-
-  const kalimat=
-    val('c16','kalimat_hidup');
-
-
-  const parts=[];
-
-
-  if(hari){
-
-    parts.push(
-      `Sepanjang hari ini aku merasa ${cleanSentence(hari)}`
-    );
-
+// ======================================================================
+// EVENT LISTENER GLOBAL — input teks & checkbox
+// ======================================================================
+document.addEventListener('input', e => {
+  let t = e.target,
+    k = t.dataset.kind,
+    c = t.dataset.c;
+  if (!k || !c) return;
+  if (k === 'value') {
+    let ed = state.editing[editId(c, t.dataset.k)];
+    if (ed) ed.value = t.value
+  } else if (k === 'list') {
+    let ed = state.editing[editId(c, t.dataset.parent)];
+    if (ed) ed.list[t.dataset.k] = t.value
+  } else if (k === 'other') {
+    let ed = state.editing[editId(c, t.dataset.k)];
+    if (ed) ed.check.other = t.value
+  } else if (k === 'custom-q') {
+    let ed = state.editing[editId(c, 'custom:' + t.dataset.id)];
+    if (ed) ed.q = t.value
+  } else if (k === 'custom-a') {
+    let ed = state.editing[editId(c, 'custom:' + t.dataset.id)];
+    if (ed) ed.a = t.value
   }
-
-
-  if(bebas){
-
-    parts.push(
-      `Aku merasa bebas karena ${cleanSentence(bebas)}`
-    );
-
+});
+document.addEventListener('change', e => {
+  let t = e.target;
+  if (t.dataset.kind === 'check') {
+    let ed = state.editing[editId(t.dataset.c, t.dataset.k)];
+    ed.check.opts[t.dataset.o] = t.checked;
+    renderDetail(CATS.find(c => c.id === t.dataset.c))
   }
+})
 
 
-  if(kaya){
-
-    parts.push(
-      `Aku merasa kaya karena ${cleanSentence(kaya)}`
-    );
-
-  }
-
-
-  if(berhasil){
-
-    parts.push(
-      `Aku merasa berhasil karena ${cleanSentence(berhasil)}`
-    );
-
-  }
-
-
-  if(tenang){
-
-    parts.push(
-      `Aku merasa tenang karena ${cleanSentence(tenang)}`
-    );
-
-  }
-
-
-  if(keluarga){
-
-    parts.push(
-      `Aku merasa dekat dengan keluargaku karena ${cleanSentence(keluarga)}`
-    );
-
-  }
-
-
-  if(bangga){
-
-    parts.push(
-      `Dan aku merasa bangga pada diriku karena ${cleanSentence(bangga)}`
-    );
-
-  }
-
-
-  if(kalimat){
-
-    parts.push(
-      `Jika harus diringkas dalam satu kalimat, hidupku terasa seperti ini: "${cleanSentence(kalimat)}"`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
+// ======================================================================
+// NOTIFIKASI 'TERSIMPAN' (toast)
+// ======================================================================
+function flashToast() {
+  let t = document.getElementById('saveToast');
+  if (!t) return;
+  t.classList.add('show');
+  clearTimeout(window.toast);
+  window.toast = setTimeout(() => t.classList.remove('show'), 1100)
 }
 
 
-/* =========================================================
-   STORY 17 — WHAT I REALLY WANT
-========================================================= */
-
-function storyWhatIWant(){
-
-  const kehidupan=
-    val('c17','kehidupan_sebenarnya');
-
-  const terasa=
-    val('c17','hidup_terasa17');
-
-  const lebihBanyak=
-    val('c17','lebih_banyak');
-
-  const lebihSedikit=
-    val('c17','lebih_sedikit');
-
-  const kebebasan=
-    val('c17','kebebasan_untuk');
-
-  const tidakKembali=
-    val('c17','tidak_ingin_kembali');
-
-
-  const parts=[];
-
-
-  if(kehidupan){
-
-    parts.push(
-      `Jika semua benda dan angka dihilangkan, kehidupan yang sebenarnya aku inginkan adalah ${cleanSentence(kehidupan)}`
-    );
-
-  }
-
-
-  if(terasa){
-
-    parts.push(
-      `Aku ingin hidupku terasa ${cleanSentence(terasa)}`
-    );
-
-  }
-
-
-  if(lebihBanyak){
-
-    parts.push(
-      `Aku ingin memiliki lebih banyak ${cleanSentence(lebihBanyak)}`
-    );
-
-  }
-
-
-  if(lebihSedikit){
-
-    parts.push(
-      `Dan lebih sedikit ${cleanSentence(lebihSedikit)}`
-    );
-
-  }
-
-
-  if(kebebasan){
-
-    parts.push(
-      `Aku ingin punya kebebasan untuk ${cleanSentence(kebebasan)}`
-    );
-
-  }
-
-
-  if(tidakKembali){
-
-    parts.push(
-      `Aku tidak ingin kembali ke kehidupan yang ${cleanSentence(tidakKembali)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 18 — FUTURE LETTER
-========================================================= */
-
-function storyFutureLetter(){
-
-  const merasa=
-    val('c18','dulu_merasa');
-
-  const berpikir=
-    val('c18','dulu_berpikir');
-
-  const sekarang=
-    val('c18','sekarang_sudah');
-
-  const takut=
-    val('c18','tidak_perlu_takut');
-
-  const bisa=
-    val('c18','bisa_dilakukan');
-
-  const bangga=
-    val('c18','paling_dibanggakan');
-
-  const tahu=
-    val('c18','ingin_kamu_tahu');
-
-  const mulai=
-    val('c18','mulai_dari');
-
-
-  const parts=[];
-
-
-  if(merasa){
-
-    parts.push(
-      `Aku tahu dulu kamu sering merasa ${cleanSentence(merasa)}`
-    );
-
-  }
-
-
-  if(berpikir){
-
-    parts.push(
-      `Aku ingat dulu kamu sering berpikir ${cleanSentence(berpikir)}`
-    );
-
-  }
-
-
-  if(sekarang){
-
-    parts.push(
-      `Tapi lihat kita sekarang. Sekarang kita sudah ${cleanSentence(sekarang)}`
-    );
-
-  }
-
-
-  if(takut){
-
-    parts.push(
-      `Ternyata hal yang dulu tidak perlu kamu takutkan adalah ${cleanSentence(takut)}`
-    );
-
-  }
-
-
-  if(bisa){
-
-    parts.push(
-      `Dan ternyata kamu bisa melakukan ${cleanSentence(bisa)}`
-    );
-
-  }
-
-
-  if(bangga){
-
-    parts.push(
-      `Hal yang paling aku banggakan dari kamu adalah ${cleanSentence(bangga)}`
-    );
-
-  }
-
-
-  if(tahu){
-
-    parts.push(
-      `Aku ingin kamu tahu bahwa ${cleanSentence(tahu)}`
-    );
-
-  }
-
-
-  if(mulai){
-
-    parts.push(
-      `Jadi jangan terlalu takut. Mulai saja dari ${cleanSentence(mulai)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ') + '.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 19 — NON NEGOTIABLE
-========================================================= */
-
-function storyNonNegotiables(){
-
-  const daftar=
-    listValues(
-      'c19',
-      'daftar_nn',
-      5
-    );
-
-  const waktu=
-    val('c19','waktu_selalu');
-
-  const jaga=
-    val('c19','jaga_selalu');
-
-  const korban=
-    val('c19','tidak_korbankan');
-
-
-  const parts=[];
-
-
-  if(daftar.length){
-
-    parts.push(
-      `Dalam kehidupan yang kubangun, ada hal-hal yang tidak ingin kehilangan tempat: ${joinNatural(daftar).replace(/\.$/,'')}`
-    );
-
-  }
-
-
-  if(waktu){
-
-    parts.push(
-      `Aku ingin selalu punya waktu untuk ${cleanSentence(waktu)}`
-    );
-
-  }
-
-
-  if(jaga){
-
-    parts.push(
-      `Aku ingin selalu menjaga ${cleanSentence(jaga)}`
-    );
-
-  }
-
-
-  if(korban){
-
-    parts.push(
-      `Dan aku tidak akan mengorbankan ${cleanSentence(korban)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY 20 — CORE
-========================================================= */
-
-function storyCore(){
-
-  const uang=
-    val('c20','cukup_uang');
-
-  const waktu=
-    val('c20','cukup_waktu');
-
-  const keluarga=
-    val('c20','keluarga_yang');
-
-  const pekerjaan=
-    val('c20','pekerjaan_yang');
-
-  const tubuh=
-    val('c20','tubuh_yang');
-
-  const allah=
-    val('c20','hubungan_allah_yang');
-
-  const perempuan=
-    val('c20','perempuan_yang');
-
-
-  const parts=[];
-
-
-  if(uang){
-
-    parts.push(
-      `Aku punya cukup uang untuk ${cleanSentence(uang)}`
-    );
-
-  }
-
-
-  if(waktu){
-
-    parts.push(
-      `Aku punya cukup waktu untuk ${cleanSentence(waktu)}`
-    );
-
-  }
-
-
-  if(keluarga){
-
-    parts.push(
-      `Aku punya keluarga yang ${cleanSentence(keluarga)}`
-    );
-
-  }
-
-
-  if(pekerjaan){
-
-    parts.push(
-      `Aku punya pekerjaan atau bisnis yang ${cleanSentence(pekerjaan)}`
-    );
-
-  }
-
-
-  if(tubuh){
-
-    parts.push(
-      `Aku punya tubuh yang ${cleanSentence(tubuh)}`
-    );
-
-  }
-
-
-  if(allah){
-
-    parts.push(
-      `Aku punya hubungan dengan Allah yang ${cleanSentence(allah)}`
-    );
-
-  }
-
-
-  if(perempuan){
-
-    parts.push(
-      `Dan pada akhirnya, aku merasa menjadi perempuan yang ${cleanSentence(perempuan)}`
-    );
-
-  }
-
-
-  return parts.length
-    ? parts.join('. ')+'.'
-    : '';
-
-}
-
-
-/* =========================================================
-   STORY PHOTO HTML
-========================================================= */
-
-function storyImages(catId){
-
-  const imgs=
-    state.data[catId]?.images ||
-    [];
-
-  if(!imgs.length){
-    return '';
-  }
-
-
-  return `
-
-    <div class="story-image-grid">
-
-      ${
-        imgs.map(
-          img =>
-            `
-              <img
-                src="${img.src}"
-              >
-            `
-        ).join('')
-      }
-
-    </div>
-
-  `;
-
-}
-
-
-/* =========================================================
-   STORY CHAPTER BUILDER
-========================================================= */
-
-function storyChapter(
-  number,
-  title,
-  subtitle,
-  text,
-  images='',
-  quote=''
-){
-
-  if(
-    !text &&
-    !images
-  ){
-    return '';
-  }
-
-
-  let body='';
-
-
-  if(text){
-
-    const paragraphs=
-      text
-        .split(/\n+/)
-        .map(x=>x.trim())
-        .filter(Boolean);
-
-
-    if(paragraphs.length===1){
-
-      body+=`
-        <p class="story-dropcap">
-          ${escapeHTML(paragraphs[0])}
-        </p>
-      `;
-
-    }else{
-
-      body+=
-        paragraphs
-          .map(
-            p=>
-              `
-                <p>
-                  ${escapeHTML(p)}
-                </p>
-              `
-          )
-          .join('');
-
-    }
-
-  }
-
-
-  if(quote){
-
-    body+=`
-
-      <div class="story-quote">
-        ${escapeHTML(quote)}
-      </div>
-
-    `;
-
-  }
-
-
-  body+=images;
-
-
-  return `
-
-    <section class="story-chapter">
-
-      <div class="story-chapter-head">
-
-        <div class="story-chapter-number">
-          ${number}
-        </div>
-
-        <h2 class="story-chapter-title">
-          ${escapeHTML(title)}
-        </h2>
-
-        ${
-          subtitle
-          ?
-          `
-            <div class="story-chapter-sub">
-              ${escapeHTML(subtitle)}
-            </div>
-          `
-          :
-          ''
+// ======================================================================
+// UPLOAD & KOMPRESI FOTO
+// ======================================================================
+function compressImage(file) {
+  return new Promise((res, rej) => {
+    let r = new FileReader;
+    r.onload = e => {
+      let i = new Image;
+      i.onload = () => {
+        let w = i.width,
+          h = i.height,
+          m = 1000;
+        if (w > m || h > m) {
+          let s = Math.min(m / w, m / h);
+          w *= s;
+          h *= s
         }
-
-      </div>
-
-      <div class="story-text">
-        ${body}
-      </div>
-
-    </section>
-
-  `;
-
+        let c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        c.getContext('2d').drawImage(i, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', .72))
+      };
+      i.src = e.target.result
+    };
+    r.onerror = rej;
+    r.readAsDataURL(file)
+  })
 }
-
-
-/* =========================================================
-   BUILD STORY PDF
-========================================================= */
-
-function buildStoryPDF(){
-
-  const tanggal=
-    val('c0','tanggal');
-
-  const tahun=
-    val('c0','tahun');
-
-  const usia=
-    val('c0','usia');
-
-
-  let html='';
-
-
-  /* COVER */
-
-  html+=`
-
-    <div class="story-cover">
-
-      <div class="story-cover-eyebrow">
-        My Tuesday
-      </div>
-
-      <h1>
-        Kehidupan yang<br>
-        Sedang Aku Bangun
-      </h1>
-
-      <h2>
-        5 tahun dari sekarang
-      </h2>
-
-      <div class="story-cover-line"></div>
-
-      <div class="story-cover-quote">
-        “Aku tidak sedang menunggu kehidupan ini terjadi.
-        Aku sedang membangunnya, sedikit demi sedikit.”
-      </div>
-
-      ${
-        tahun
-        ?
-        `
-          <div class="story-cover-date">
-            Tahun yang sedang kubayangkan: ${escapeHTML(tahun)}
-          </div>
-        `
-        :
-        ''
-      }
-
-      ${
-        usia
-        ?
-        `
-          <div class="story-cover-date">
-            Ditulis ketika aku berusia ${escapeHTML(usia)}
-          </div>
-        `
-        :
-        ''
-      }
-
-      ${
-        tanggal
-        ?
-        `
-          <div class="story-cover-date">
-            ${escapeHTML(tanggal)}
-          </div>
-        `
-        :
-        ''
-      }
-
-    </div>
-
-  `;
-
-
-  /* CHAPTER 1 */
-
-  html+=storyChapter(
-    '01',
-    'Pagi yang Tenang',
-    'Hari Selasa dimulai dari sini.',
-    storyMorning(),
-    storyImages('c1')
-  );
-
-
-  /* CHAPTER 2 */
-
-  html+=storyChapter(
-    '02',
-    'Yang Menopang Semuanya',
-    'Hubunganku dengan Allah.',
-    storyFaith(),
-    storyImages('c2')
-  );
-
-
-  /* CHAPTER 3 */
-
-  html+=storyChapter(
-    '03',
-    'Tubuh yang Kitinggali',
-    'Kesehatan, kekuatan, dan cara aku merawat diri.',
-    storyHealth(),
-    storyImages('c3')
-  );
-
-
-  /* CHAPTER 4 */
-
-  html+=storyChapter(
-    '04',
-    'Cara Aku Memperlakukan Diriku',
-    'Beauty, self-care, dan hal-hal kecil yang membuatku merasa menjadi diriku sendiri.',
-    storySelfCare(),
-    storyImages('c4')
-  );
-
-
-  /* CHAPTER 5 */
-
-  html+=storyChapter(
-    '05',
-    'Tempat Aku Pulang',
-    'Rumah yang menjadi latar kehidupan ini.',
-    storyHome(),
-    storyImages('c5')
-  );
-
-
-  /* CHAPTER 6 */
-
-  html+=storyChapter(
-    '06',
-    'Kami',
-    'Suamiku dan pernikahan yang kami bangun.',
-    storyMarriage(),
-    storyImages('c6')
-  );
-
-
-  /* CHAPTER 7 */
-
-  html+=storyChapter(
-    '07',
-    'Anak-anak yang Membuatku Ingin Cepat Pulang',
-    'Menjadi ibu.',
-    storyChildren(),
-    storyImages('c7')
-  );
-
-
-  /* CHAPTER 8 */
-
-  html+=storyChapter(
-    '08',
-    'Pagi Sebelum Hari Ramai',
-    'Ritual kecil sebelum bekerja.',
-    storyBeforeWork(),
-    storyImages('c8')
-  );
-
-
-  /* CHAPTER 9 */
-
-  html+=storyChapter(
-    '09',
-    'Apa yang Aku Bangun',
-    'Pekerjaan dan peranku di dalamnya.',
-    storyWork(),
-    storyImages('c9')
-  );
-
-
-  /* CHAPTER 10 */
-
-  html+=storyChapter(
-    '10',
-    'Ide yang Menjadi Nyata',
-    'Bisnis, kreativitas, dan kehidupan sebagai founder.',
-    storyBusiness(),
-    storyImages('c10')
-  );
-
-
-  /* CHAPTER 11 */
-
-  html+=storyChapter(
-    '11',
-    'Uang yang Memberi Ruang',
-    'Bukan sekadar angka, tetapi rasa aman.',
-    storyMoney(),
-    storyImages('c11')
-  );
-
-
-  /* CHAPTER 12 */
-
-  html+=storyChapter(
-    '12',
-    'Aku Mengizinkan Diriku Menikmati Hidup',
-    'Gaya hidup yang terasa seperti aku.',
-    storyLifestyle(),
-    storyImages('c12')
-  );
-
-
-  /* CHAPTER 13 */
-
-  html+=storyChapter(
-    '13',
-    'Orang-orang di Sekitarku',
-    'Teman, lingkungan, dan relasi.',
-    storyRelationships(),
-    storyImages('c13')
-  );
-
-
-  /* CHAPTER 14 */
-
-  html+=storyChapter(
-    '14',
-    'Perempuan yang Aku Jadi',
-    'Diriku sendiri.',
-    storySelf(),
-    storyImages('c14')
-  );
-
-
-  /* CHAPTER 15 — TIMELINE */
-
-  const timeline=
-    timelineStory();
-
-
-  if(timeline){
-
-    html+=`
-
-      <section class="story-chapter">
-
-        <div class="story-chapter-head">
-
-          <div class="story-chapter-number">
-            15
-          </div>
-
-          <h2 class="story-chapter-title">
-            Satu Hari Biasa
-          </h2>
-
-          <div class="story-chapter-sub">
-            Hari Selasa yang sederhana, tetapi sangat aku inginkan.
-          </div>
-
-        </div>
-
-        <div class="timeline-story">
-
-          ${timeline}
-
-        </div>
-
-        ${storyImages('c15')}
-
-      </section>
-
-    `;
-
+async function handleImages(cid, files) {
+  for (let f of files) {
+    try {
+      state.data[cid].images.push({
+        id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        src: await compressImage(f)
+      })
+    } catch (e) {}
   }
-
-
-  /* CHAPTER 16 */
-
-  html+=storyChapter(
-    '16',
-    'Bagaimana Rasanya Menjalani Hidup Ini',
-    'Bukan hanya apa yang kumiliki, tetapi bagaimana rasanya.',
-    storyFeelings(),
-    storyImages('c16'),
-    val('c16','kalimat_hidup')
-  );
-
-
-  /* CHAPTER 17 */
-
-  html+=storyChapter(
-    '17',
-    'Apa yang Sebenarnya Aku Cari?',
-    'Jika semua benda dan angka dihilangkan.',
-    storyWhatIWant(),
-    storyImages('c17')
-  );
-
-
-  /* CHAPTER 18 */
-
-  const futureLetter=
-    storyFutureLetter();
-
-
-  if(futureLetter){
-
-    html+=`
-
-      <section class="story-chapter">
-
-        <div class="story-chapter-head">
-
-          <div class="story-chapter-number">
-            18
-          </div>
-
-          <h2 class="story-chapter-title">
-            Surat dari Lima Tahun Depan
-          </h2>
-
-          <div class="story-chapter-sub">
-            Dear Della, sekarang kamu sedang membaca surat ini dari masa depan.
-          </div>
-
-        </div>
-
-        <div class="story-text">
-
-          ${
-            futureLetter
-              .split('. ')
-              .filter(Boolean)
-              .map(
-                p=>
-                  `
-                    <p>
-                      ${escapeHTML(
-                        p.replace(/\.$/,'')
-                      )}.
-                    </p>
-                  `
-              )
-              .join('')
-          }
-
-        </div>
-
-        ${storyImages('c18')}
-
-      </section>
-
-    `;
-
-  }
-
-
-  /* CHAPTER 19 */
-
-  html+=storyChapter(
-    '19',
-    'Hal-hal yang Tidak Akan Kukorbankan',
-    'My Non-Negotiables.',
-    storyNonNegotiables(),
-    storyImages('c19')
-  );
-
-
-  /* CHAPTER 20 */
-
-  const coreStory=
-    storyCore();
-
-
-  if(coreStory){
-
-    html+=`
-
-      <section class="story-chapter">
-
-        <div class="story-chapter-head">
-
-          <div class="story-chapter-number">
-            20
-          </div>
-
-          <h2 class="story-chapter-title">
-            Core of My Life
-          </h2>
-
-          <div class="story-chapter-sub">
-            Aku sedang membangun kehidupan di mana...
-          </div>
-
-        </div>
-
-        <div class="story-text">
-
-          ${
-            coreStory
-              .split('. ')
-              .filter(Boolean)
-              .map(
-                p=>
-                  `
-                    <p>
-                      ${escapeHTML(
-                        p.replace(/\.$/,'')
-                      )}.
-                    </p>
-                  `
-              )
-              .join('')
-          }
-
-        </div>
-
-
-        <div class="core-print">
-
-          <div class="core-print-title">
-            My Core
-          </div>
-
-          ${
-            CORE_VALUES
-              .map(
-                v=>
-                  `
-                    <div class="core-print-item">
-
-                      <b>
-                        ${escapeHTML(v.n)}
-                      </b>
-
-                      <span>
-                        ${escapeHTML(v.d)}
-                      </span>
-
-                    </div>
-                  `
-              )
-              .join('')
-          }
-
-        </div>
-
-      </section>
-
-    `;
-
-  }
-
-
-  /* ENDING */
-
-  html+=`
-
-    <section class="story-ending">
-
-      <div class="story-ending-inner">
-
-        <h2>
-          My life is mine.
-        </h2>
-
-        <p>
-          Aku tidak sedang mengejar kehidupan orang lain.
-          <br><br>
-          Aku sedang membangun kehidupan yang terasa seperti aku.
-          <br><br>
-          Sedikit demi sedikit.
-          <br>
-          Hari demi hari.
-          <br>
-          Selasa demi Selasa.
-        </p>
-
-        <div class="story-footer">
-          MY TUESDAY · A VISION OF THE LIFE I AM BUILDING
-        </div>
-
-      </div>
-
-    </section>
-
-  `;
-
-
-  return html;
-
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+function deleteImage(cid, id) {
+  state.data[cid].images = state.data[cid].images.filter(x => x.id !== id);
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid))
 }
 
 
-/* =========================================================
-   EXPORT PDF
-========================================================= */
-
-function exportPDF(){
-
-  const sheet=
-    document.getElementById(
-      'printSheet'
-    );
-
-  sheet.innerHTML=
-    buildStoryPDF();
-
-
-  setTimeout(
-    ()=>{
-      window.print();
-    },
-    250
-  );
-
+// ======================================================================
+// HAPUS ISI SATU KATEGORI
+// ======================================================================
+function clearCategory(cid) {
+  if (!confirm('Hapus semua isian, pertanyaan tambahan, dan foto kategori ini?')) return;
+  state.data[cid] = emptyData();
+  localStorage.removeItem('cat:' + cid);
+  renderDetail(CATS.find(c => c.id === cid));
+  renderHome()
 }
 
 
-/* =========================================================
-   UTILITIES
-========================================================= */
+// ======================================================================
+// BACKUP & IMPORT DATA (unduh/muat file JSON)
+// ======================================================================
+function exportBackup() {
+  let b = new Blob([JSON.stringify({
+      app: 'my-tuesday',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      data: state.data
+    }, null, 2)], {
+      type: 'application/json'
+    }),
+    u = URL.createObjectURL(b),
+    a = document.createElement('a');
+  a.href = u;
+  a.download = 'my-tuesday-cadangan-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(u)
+}
 
-function escapeHTML(s){
+function triggerImport() {
+  document.getElementById('importFile').click()
+}
 
-  return String(s || '')
-    .replace(
-      /[&<>]/g,
-      m=>({
-        '&':'&amp;',
-        '<':'&lt;',
-        '>':'&gt;'
-      }[m])
-    );
-
+function importBackup(files) {
+  let f = files?.[0];
+  if (!f) return;
+  let r = new FileReader;
+  r.onload = e => {
+    try {
+      let p = JSON.parse(e.target.result),
+        incoming = p.data || p;
+      if (!confirm('Ganti semua isian saat ini dengan cadangan ini?')) return;
+      if (incoming.c10) {
+        let a = normalize(incoming.c9),
+          b = normalize(incoming.c10);
+        a.values = {
+          ...a.values,
+          ...b.values
+        };
+        a.checks = {
+          ...a.checks,
+          ...b.checks
+        };
+        a.images = [...a.images, ...b.images];
+        a.custom = [...a.custom, ...b.custom];
+        incoming.c9 = a
+      }
+      CATS.forEach(c => {
+        state.data[c.id] = normalize(incoming[c.id]);
+        localStorage.setItem('cat:' + c.id, JSON.stringify(state.data[c.id]))
+      });
+      renderHome();
+      alert('Cadangan berhasil dimuat. JSON dari versi lama tetap didukung.')
+    } catch (err) {
+      alert('File cadangan tidak bisa dibaca.')
+    }
+  };
+  r.readAsText(f)
 }
 
 
-function escapeAttr(s){
+// ======================================================================
+// HELPER UNTUK CERITA — ambil jawaban per kategori (val/check/list)
+// ======================================================================
+function isDeleted(cid, k) {
+  return !!state.data[cid]?.deleted?.[k]
+}
 
-  return String(s || '')
-    .replace(
-      /[&<>"]/g,
-      m=>({
-        '&':'&amp;',
-        '<':'&lt;',
-        '>':'&gt;',
-        '"':'&quot;'
-      }[m])
-    );
+function val(cid, k) {
+  return isDeleted(cid, k) ? '' : (state.data[cid]?.values?.[k] || '').trim()
+}
 
+function check(cid, k) {
+  if (isDeleted(cid, k)) return '';
+  let c = state.data[cid]?.checks?.[k] || {},
+    a = Object.entries(c.opts || {}).filter(([, v]) => v).map(([x]) => x);
+  if (c.other?.trim()) a.push(c.other.trim());
+  return a.join(', ')
+}
+
+function list(cid, k) {
+  if (isDeleted(cid, k)) return '';
+  return Object.keys(state.data[cid]?.values || {}).filter(x => x.startsWith(k + '__')).sort().map(x => state.data[cid].values[x]).filter(Boolean).join(', ')
+}
+
+function customStory(c) {
+  return (state.data[c.id].custom || []).filter(x => x.answer?.trim()).map(x => `<p><strong>${esc(x.q||'Catatan tambahan')}.</strong> ${esc(x.answer)}</p>`).join('')
+}
+
+function sec(title, texts, cid, images = false) {
+  let arr = texts.filter(Boolean);
+  if (!arr.length && !customStory(CATS.find(c => c.id === cid))) return '';
+  let cat = CATS.find(c => c.id === cid),
+    img = images ? (state.data[cid].images || []).slice(0, 6).map(i => `<img src="${i.src}">`).join('') : '';
+  return `<section class="story-section"><h2 style="color:${cat.accent}">${title}</h2>${arr.map(x=>`<p>${x}</p>`).join('')}${customStory(cat)}${img?`<div class="story-images">${img}</div>`:''}</section>`
 }
 
 
-/* =========================================================
-   INIT
-========================================================= */
-
-async function init(){
-
-  document
-    .getElementById(
-      'homeView'
-    )
-    .innerHTML=`
-
-      <div
-        style="
-          padding:80px 24px;
-          text-align:center;
-          font-family:'Fraunces',serif;
-          font-style:italic;
-          color:#7A7086;
-        "
-      >
-        Menyiapkan lembar kehidupanmu...
-      </div>
-
-    `;
-
-
-  await loadAll();
-
-
-  renderHome();
-
+// ======================================================================
+// SUSUN CERITA — gabungkan semua jawaban jadi narasi (buildStory)
+// ======================================================================
+function buildStory() {
+  let s = [];
+  let jam = val('c1', 'jam_bangun'),
+    first = val('c1', 'hal_pertama'),
+    feel = val('c1', 'perasaan_bangun'),
+    room = val('c1', 'suasana_kamar'),
+    light = val('c1', 'cahaya_pagi');
+  s.push(sec('Pagi Dimulai', [jam ? `Lima tahun dari sekarang, pada sebuah hari Selasa, aku membuka mata sekitar pukul <strong>${esc(jam)}</strong>.` : '', feel ? `Aku bangun dengan perasaan ${esc(feel)}.` : '', room ? `Di sekelilingku, ${esc(room)}.` : '', light ? `Cahaya pagi ${esc(light)}.` : '', first ? `Hal pertama yang kulakukan adalah ${esc(first)}.` : ''], 'c1', true));
+  let ib = check('c2', 'ibadah'),
+    sp = val('c2', 'hubungan_spiritual'),
+    doa = val('c2', 'doa_sering');
+  s.push(sec('Yang Menopang Hari Ini', [ib ? `Pagi ini dimulai dengan ${esc(ib)}.` : '', sp ? `Hubunganku dengan Allah terasa ${esc(sp)}.` : '', doa ? `Doa yang paling sering kupanjatkan adalah tentang ${esc(doa)}.` : ''], 'c2'));
+  let body = val('c3', 'tubuh_terasa'),
+    fit = val('c3', 'kondisi_fisik'),
+    sport = val('c3', 'olahraga'),
+    food = val('c3', 'cara_makan'),
+    mirror = val('c3', 'cermin');
+  s.push(sec('Tubuh yang Kurasakan sebagai Rumah', [body ? `Tubuhku terasa ${esc(body)}.` : '', fit ? `Aku berada pada kondisi fisik yang membuatku nyaman: ${esc(fit)}.` : '', sport ? `Aku menjaga tubuhku melalui ${esc(sport)}.` : '', food ? `Aku makan dengan cara ${esc(food)}.` : '', mirror ? `Saat melihat diriku di cermin, aku merasa ${esc(mirror)}.` : ''], 'c3'));
+  let house = val('c5', 'rumah_seperti'),
+    loc = val('c5', 'lokasi'),
+    fav = val('c5', 'ruangan_favorit'),
+    night = val('c5', 'suasana_malam'),
+    fac = check('c5', 'fasilitas');
+  s.push(sec('Rumah yang Menjadi Tempat Pulang', [loc ? `Aku tinggal di ${esc(loc)}.` : '', house ? `Rumahku ${esc(house)}.` : '', fav ? `Ruangan favoritku adalah ${esc(fav)}.` : '', fac ? `Di dalamnya ada ruang untuk ${esc(fac)}.` : '', night ? `Ketika malam datang, ${esc(night)}.` : ''], 'c5', true));
+  let hus = val('c6', 'pagi_bersama'),
+    rel = val('c6', 'hubungan_terasa'),
+    talk = val('c6', 'ngobrol'),
+    two = val('c6', 'waktu_berdua');
+  s.push(sec('Tim Kecilku', [hus ? `Di pagi hari, aku dan suamiku biasanya ${esc(hus)}.` : '', talk ? `Kami berbicara tentang ${esc(talk)}.` : '', rel ? `Hubungan kami terasa ${esc(rel)}.` : '', two ? `Kami tetap menyediakan waktu berdua untuk ${esc(two)}.` : ''], 'c6'));
+  let kids = val('c7', 'anak_seperti'),
+    mom = val('c7', 'jadi_ibu'),
+    act = val('c7', 'aktivitas_bersama'),
+    remember = val('c7', 'diingat_sebagai'),
+    kt = check('c7', 'waktu_untuk_anak');
+  s.push(sec('Anak-Anak dan Waktu yang Tidak Kulewatkan', [kids ? `Anak-anakku tumbuh menjadi ${esc(kids)}.` : '', mom ? `Aku hadir sebagai ibu yang ${esc(mom)}.` : '', act ? `Kami sering ${esc(act)} bersama.` : '', kt ? `Aku masih punya waktu untuk ${esc(kt)}.` : '', remember ? `Aku berharap mereka mengingat masa kecilnya sebagai ${esc(remember)}.` : ''], 'c7'));
+  let job = val('c9', 'bekerja_sebagai'),
+    company = val('c9', 'nama_bidang'),
+    role = check('c9', 'peran_utama'),
+    team = val('c9', 'orang_bersama'),
+    hours = val('c9', 'jam_kerja'),
+    notself = val('c9', 'tidak_dikerjakan_sendiri');
+  s.push(sec('Pekerjaan yang Kubangun', [job ? `Aku bekerja sebagai ${esc(job)}.` : '', company ? `Fokus utama pekerjaanku berada di ${esc(company)}.` : '', role ? `Peranku kini lebih banyak pada ${esc(role)}.` : '', notself ? `Aku tidak lagi mengerjakan sendiri ${esc(notself)}.` : '', team ? `Aku membangun semuanya bersama ${esc(team)}.` : '', hours ? `Jam kerjaku biasanya ${esc(hours)}.` : ''], 'c9', true));
+  let biz = list('c9', 'bidang_bisnis'),
+    income = val('c9', 'sumber_penghasilan'),
+    founder = val('c9', 'waktu_founder'),
+    system = val('c9', 'sistem_ide');
+  s.push(sec('Pekerjaan, Bisnis & Ide yang Menjadi Nyata', [biz ? `Aku memiliki dan mengembangkan bisnis di bidang ${esc(biz)}.` : '', income ? `Sumber penghasilannya datang dari ${esc(income)}.` : '', founder ? `Sebagai founder, waktuku kuhabiskan untuk ${esc(founder)}.` : '', system ? `Setiap kali sebuah ide baru datang, sistemku adalah ${esc(system)}.` : ''], 'c9'));
+  let fam = val('c11', 'penghasilan_keluarga'),
+    personal = val('c11', 'penghasilan_pribadi'),
+    safe = val('c11', 'aman_finansial'),
+    assets = check('c11', 'aset');
+  s.push(sec('Uang sebagai Penopang, Bukan Ketakutan', [fam ? `Penghasilan keluarga yang kubayangkan mencapai sekitar Rp ${esc(fam)} per bulan.` : '', personal ? `Aku juga memiliki penghasilan pribadi sekitar Rp ${esc(personal)}.` : '', assets ? `Aku membangun rasa aman melalui ${esc(assets)}.` : '', safe ? `Aku merasa aman secara finansial karena ${esc(safe)}.` : ''], 'c11'));
+  let life = check('c12', 'dinikmati'),
+    travel = val('c12', 'liburan'),
+    dest = val('c12', 'destinasi'),
+    small = val('c12', 'tanpa_bersalah_kecil');
+  s.push(sec('Hidup yang Boleh Dinikmati', [life ? `Aku mengizinkan diriku menikmati ${esc(life)}.` : '', travel ? `Aku pergi liburan ${esc(travel)}.` : '', dest ? `Beberapa tempat yang sering kudatangi adalah ${esc(dest)}.` : '', small ? `Kini aku dapat menikmati ${esc(small)} tanpa merasa bersalah.` : ''], 'c12'));
+  let self = val('c14', 'diriku_5th'),
+    traits = check('c14', 'sifat'),
+    brave = val('c14', 'sudah_berani'),
+    proud = val('c14', 'bangga_diri14');
+  s.push(sec('Perempuan yang Sedang Kutuju', [self ? `Lima tahun dari sekarang, ${esc(self)}.` : '', traits ? `Aku menjadi lebih ${esc(traits)}.` : '', brave ? `Aku sudah berani ${esc(brave)}.` : '', proud ? `Dan aku bangga pada diriku karena ${esc(proud)}.` : ''], 'c14', true));
+  let timeline = TIME_SLOTS.map(t => ({
+    t,
+    v: val('c15', 'time__' + t)
+  })).filter(x => x.v);
+  if (timeline.length) s.push(`<section class="story-section"><h2 style="color:${CATS.find(c=>c.id==='c15').accent}">Satu Hari Selasa yang Biasa</h2>${timeline.map(x=>`<p><strong>${x.t}</strong> — ${esc(x.v)}</p>`).join('')}${customStory(CATS.find(c=>c.id==='c15'))}</section>`);
+  let feelday = val('c16', 'perasaan_hari'),
+    free = val('c16', 'bebas_karena'),
+    rich = val('c16', 'kaya_karena'),
+    calm = val('c16', 'tenang_karena'),
+    quote = val('c16', 'kalimat_hidup');
+  s.push(sec('Dan Beginilah Rasanya', [feelday ? `Sepanjang hari, aku merasa ${esc(feelday)}.` : '', free ? `Aku merasa bebas karena ${esc(free)}.` : '', rich ? `Aku merasa kaya karena ${esc(rich)}.` : '', calm ? `Aku merasa tenang karena ${esc(calm)}.` : '', quote ? `<span class="quote">${esc(quote)}</span>` : ''], 'c16'));
+  let real = val('c17', 'kehidupan_sebenarnya'),
+    sense = val('c17', 'hidup_terasa17'),
+    freedom = val('c17', 'kebebasan_untuk');
+  s.push(sec('Apa yang Sebenarnya Kucari', [real ? `Pada akhirnya, kehidupan yang sebenarnya kuinginkan adalah ${esc(real)}.` : '', sense ? `Aku ingin hidupku terasa ${esc(sense)}.` : '', freedom ? `Aku ingin memiliki kebebasan untuk ${esc(freedom)}.` : ''], 'c17'));
+  let future = val('c18', 'sekarang_sudah'),
+    know = val('c18', 'ingin_kamu_tahu'),
+    start = val('c18', 'mulai_dari');
+  s.push(sec('Surat dari Masa Depan', [future ? `Jika aku dari masa depan bisa berbicara kepada diriku hari ini, aku akan berkata: lihat kita sekarang. ${esc(future)}.` : '', know ? `Aku ingin kamu tahu bahwa ${esc(know)}.` : '', start ? `Jangan terlalu takut. Mulai saja dari ${esc(start)}.` : ''], 'c18'));
+  let nn = list('c19', 'daftar_nn'),
+    always = val('c19', 'waktu_selalu'),
+    keep = val('c19', 'jaga_selalu'),
+    never = val('c19', 'tidak_korbankan');
+  s.push(sec('Yang Tidak Akan Kutukar', [nn ? `Dalam perjalanan ini, ada hal-hal yang tidak ingin kuhilangkan: ${esc(nn)}.` : '', always ? `Aku ingin selalu punya waktu untuk ${esc(always)}.` : '', keep ? `Aku ingin selalu menjaga ${esc(keep)}.` : '', never ? `Aku tidak akan mengorbankan ${esc(never)}.` : ''], 'c19'));
+  let core = ['cukup_uang', 'cukup_waktu', 'keluarga_yang', 'pekerjaan_yang', 'tubuh_yang', 'hubungan_allah_yang', 'perempuan_yang'].map(k => val('c20', k)).filter(Boolean);
+  s.push(sec('Inti dari Kehidupan yang Kubangun', core.map(x => esc(x)), 'c20'));
+  return s.filter(Boolean).join('')
 }
 
 
-init();
+// ======================================================================
+// EKSPOR PDF
+// ======================================================================
+function exportPDF() {
+  document.getElementById('printSheet').innerHTML = `<div class="ph-cover"><p class="eb">My Tuesday</p><h1>Kehidupan yang Sedang Aku Bangun</h1><h2>5 tahun dari sekarang</h2><blockquote>"Aku tidak sedang menunggu kehidupan ini terjadi.<br>Aku sedang membangunnya, sedikit demi sedikit."</blockquote></div><main class="story">${buildStory()}</main><div class="story-end"><h2>My Tuesday</h2><p>Aku tidak sedang mengejar kehidupan orang lain.<br>Aku sedang membangun kehidupan yang terasa seperti aku.</p></div>`;
+  setTimeout(() => window.print(), 180)
+}
 
+// ======================================================================
+// JALANKAN APLIKASI
+// ======================================================================
+loadAll();
+renderHome();
 </script>
-
 </body>
 </html>
