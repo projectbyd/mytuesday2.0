@@ -848,14 +848,14 @@ const F = (k, l, t = 'area', x = {}) => ({
 const CATS = [{
   id: 'c0',
   num: '00',
-  title: 'Sampul',
+  title: 'Intro',
   sub: 'Titik awal cerita ini.',
   fields: [F('tanggal', 'Tanggal aku menulis ini', 'text'), F('usia', 'Usiaku sekarang', 'text'), F('tahun', 'Tahun yang sedang aku bayangkan', 'text')]
 }, {
   id: 'c1',
   num: '01',
-  title: 'Aku Bangun Pagi',
-  sub: 'Hari ini adalah hari Selasa.',
+  title: 'My Morning Ritual',
+  sub: 'Di selasa pagi ini.',
   fields: [F('jam_bangun', 'Aku bangun pukul', 'text'), F('hal_pertama', 'Hal pertama yang aku lakukan adalah'), F('perasaan_bangun', 'Aku bangun dengan perasaan', 'text'), F('alasan_tenang', 'Aku tidak terburu-buru karena'), F('suasana_kamar', 'Aku melihat kamar tidurku dan suasananya seperti'), F('cahaya_pagi', 'Cahaya pagi yang masuk ke kamar'), F('syukur_pagi', 'Hal pertama yang membuatku bersyukur pagi ini')]
 }, {
   id: 'c2',
@@ -870,13 +870,13 @@ const CATS = [{
   id: 'c3',
   num: '03',
   title: 'Tubuhku & Kesehatanku',
-  sub: 'Rumah yang aku tinggali seumur hidup.',
+  sub: 'Tentang tubuh yang kurawat, dan hidup yang ingin kunikmati.',
   fields: [F('tubuh_terasa', 'Aku ingin tubuhku terasa'), F('kondisi_fisik', 'Berat badan / kondisi fisik yang membuatku nyaman', 'text'), F('olahraga', 'Olahraga yang aku lakukan', 'text'), F('jam_olahraga', 'Aku biasanya olahraga pada pukul', 'text'), F('cara_makan', 'Aku makan dengan cara'), F('jam_tidur', 'Aku tidur sekitar pukul', 'text'), F('cermin', 'Aku ingin ketika melihat diriku di cermin, aku merasa'), F('rawat_diri', 'Aku merawat diriku dengan')]
 }, {
   id: 'c4',
   num: '04',
   title: 'Ritual Kecantikan & Self-Care',
-  sub: 'Cara aku memperlakukan diriku.',
+  sub: 'A little care, a lot of me.',
   fields: [F('setelah_olahraga', 'Setelah olahraga aku'), F('body_care', 'Sabun/body care yang aku gunakan', 'text'), F('skincare', 'Skincare-ku'), F('parfum', 'Parfum yang aku pakai', 'text'), F('aku_banget', 'Hal kecil yang membuatku merasa "aku banget"'), F('beli_barang', 'Aku membeli barang yang aku suka dengan perasaan'), F('tidak_bersalah_beli', 'Aku tidak lagi merasa bersalah ketika')]
 }, {
   id: 'c5',
@@ -893,13 +893,13 @@ const CATS = [{
 }, {
   id: 'c6',
   num: '06',
-  title: 'Suamiku & Pernikahanku',
-  sub: 'Tim kecil yang aku bangun bersama.',
-  fields: [F('pagi_bersama', 'Pagi hari aku dan suamiku biasanya'), F('ngobrol', 'Kami ngobrol tentang'), F('hubungan_terasa', 'Hubungan kami terasa'), F('waktu_berdua', 'Kami punya waktu berdua untuk'), F('pergi_berdua', 'Kami biasanya pergi berdua ke', 'text'), F('syukur_pernikahan', 'Hal yang paling aku syukuri dari kehidupan pernikahanku'), F('jadi_pasangan', 'Aku ingin menjadi pasangan yang')]
+  title: 'Love is Love',
+  sub: 'Tentang cinta yang terasa seperti pulang.',
+  fields: [F('pagi_bersama', 'Pagi hari aku dan pasanganku biasanya'), F('ngobrol', 'Kami ngobrol tentang'), F('hubungan_terasa', 'Hubungan kami terasa'), F('waktu_berdua', 'Kami punya waktu berdua untuk'), F('pergi_berdua', 'Kami biasanya pergi berdua ke', 'text'), F('syukur_pernikahan', 'Hal yang paling aku syukuri dari kehidupan pernikahanku'), F('jadi_pasangan', 'Aku ingin menjadi pasangan yang')]
 }, {
   id: 'c7',
   num: '07',
-  title: 'Anak-anakku',
+  title: 'Our Little Ones',
   sub: 'Alasan aku ingin cepat pulang.',
   fields: [F('usia_anak', 'Anak-anakku 5 tahun dari sekarang berusia', 'text'), F('anak_seperti', 'Mereka seperti apa?'), F('hubungan_anak', 'Hubunganku dengan mereka'), F('jadi_ibu', 'Aku ingin menjadi ibu yang'), F('aktivitas_bersama', 'Hal yang paling sering kami lakukan bersama'), F('diingat_sebagai', 'Aku ingin mereka mengingat masa kecilnya sebagai'), F('waktu_untuk_anak', 'Aku punya waktu untuk:', 'check', {
     opts: ['Mengantar sekolah', 'Menjemput sekolah', 'Makan bersama', 'Membantu belajar', 'Bermain', 'Jalan-jalan', 'Liburan', 'Menonton / aktivitas keluarga'],
@@ -916,7 +916,7 @@ const CATS = [{
   }), F('nama_bidang', 'Nama / bidang perusahaan atau bisnis utamaku', 'text'), F('jual_apa', 'Bisnis ini menjual'), F('target_customer', 'Target customer-nya'), F('peran_utama', 'Peran utamaku di perusahaan:', 'check', {
     opts: ['Mencari ide', 'Menentukan business model', 'Strategi', 'Mengembangkan produk', 'Mencari peluang', 'Bertemu partner', 'Mengawasi perusahaan'],
     other: true
-  }), F('tidak_dikerjakan_sendiri', 'Hal yang TIDAK lagi aku kerjakan sendiri'), F('orang_bersama', 'Orang-orang yang bekerja bersamaku'), F('alasan_kantor', 'Aku pergi ke kantor karena'), F('alasan_tidak_kantor', 'Aku tidak pergi ke kantor karena'), F('jam_kerja', 'Jam kerjaku biasanya', 'text'), F('bebas_ubah_jadwal', 'Aku bebas mengubah jadwalku ketika'), F('bidang_bisnis', 'Aku punya bisnis di bidang', 'list', {
+  }), F('tidak_dikerjakan_sendiri', 'Hal yang TIDAK lagi aku kerjakan sendiri'), F('orang_bersama', 'Orang-orang yang bekerja bersamaku'), F('jam_kerja', 'Jam kerjaku biasanya', 'text'), F('bebas_ubah_jadwal', 'Aku bebas mengubah jadwalku ketika'), F('bidang_bisnis', 'Aku punya bisnis di bidang', 'list', {
     n: 3
   }), F('sumber_penghasilan', 'Sumber penghasilan bisnisku'), F('bagian_favorit', 'Aku paling suka bagian'), F('dibantu', 'Aku punya orang yang membantu:', 'check', {
     opts: ['Marketing', 'Sales', 'Operasional', 'Finance', 'Admin', 'Product', 'Design', 'Management'],
@@ -983,7 +983,7 @@ const CATS = [{
   id: 'c18',
   num: '16',
   title: 'Surat dari 5 Tahun Depan',
-  sub: 'Dear Della, sekarang kamu sedang membaca surat ini dari masa depan.',
+  sub: 'Dear You, sekarang kamu sedang membaca surat ini dari masa depan.',
   fields: [F('dulu_merasa', 'Aku tahu kamu dulu sering merasa', 'area', {
     letter: true
   }), F('dulu_berpikir', 'Aku ingat dulu kamu sering berpikir', 'area', {
@@ -1156,7 +1156,7 @@ function renderHome() {
         photos = state.data[c.id].images.length;
       return `<div class="folder-card" style="--accent:${c.accent}" onclick="openDetail('${c.id}')"><div class="folder-num">${c.num}</div><div class="folder-body"><p class="folder-title">${c.title}${photos?` · ${photos} foto`:''}</p><p class="folder-sub">${c.sub}</p><div class="folder-progress"><i style="width:${pc}%;background:${c.accent}"></i></div></div><div class="folder-chev">›</div></div>`
     }).join('');
-  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">My Tuesday</p><h1 class="hero-title">Kehidupan yang<br>Sedang Aku Bangun</h1><p class="hero-sub">5 tahun dari sekarang.</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">"My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku."</div>`
+  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">5 Tahun dari Sekarang</p><h1 class="hero-title">MY TUESDAY</h1><p class="hero-sub">kehidupan yang sedang aku bangun</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">"My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku."</div>`
 }
 
 // ======================================================================
@@ -1277,7 +1277,7 @@ function timelineHTML(c) {
 // ======================================================================
 function customHTML(c) {
   let items = state.data[c.id].custom || [];
-  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Pertanyaan tambahan akan muncul tepat di bawah pertanyaan bawaan dan memiliki format yang sama.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
+  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Kalau suatu hari kamu punya ide baru, tambahkan pertanyaanmu sendiri di folder ini. Ia akan ikut tersimpan, masuk ke backup, dan muncul di cerita PDF.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
 }
 
 function customCard(cid, x) {
@@ -1587,7 +1587,7 @@ function buildStory() {
     rel = val('c6', 'hubungan_terasa'),
     talk = val('c6', 'ngobrol'),
     two = val('c6', 'waktu_berdua');
-  s.push(sec('Tim Kecilku', [hus ? `Di pagi hari, aku dan suamiku biasanya ${esc(hus)}.` : '', talk ? `Kami berbicara tentang ${esc(talk)}.` : '', rel ? `Hubungan kami terasa ${esc(rel)}.` : '', two ? `Kami tetap menyediakan waktu berdua untuk ${esc(two)}.` : ''], 'c6'));
+  s.push(sec('Tim Kecilku', [hus ? `Di pagi hari, aku dan pasanganku biasanya ${esc(hus)}.` : '', talk ? `Kami berbicara tentang ${esc(talk)}.` : '', rel ? `Hubungan kami terasa ${esc(rel)}.` : '', two ? `Kami tetap menyediakan waktu berdua untuk ${esc(two)}.` : ''], 'c6'));
   let kids = val('c7', 'anak_seperti'),
     mom = val('c7', 'jadi_ibu'),
     act = val('c7', 'aktivitas_bersama'),
