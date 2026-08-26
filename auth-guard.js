@@ -4,7 +4,7 @@
 // File ini dipasang di halaman utama (index.html), tepat SEBELUM
 // script utama aplikasi. Tugasnya:
 //   1. Mengecek apakah pengguna sudah login (tersimpan di localStorage).
-//   2. Mengecek apakah email login-nya ada di daftar ALLOWED_EMAILS
+//   2. Mengecek apakah email login-nya ada di daftar ALLOWED_EMAILS_TEXT
 //      (dari file allowed-emails.js).
 //   3. Kalau belum login / email tidak terdaftar → lempar ke login.html.
 //
@@ -24,11 +24,18 @@
     }
   }
 
+  function getAllowedEmails() {
+    return (window.ALLOWED_EMAILS_TEXT || '')
+      .split('\n')
+      .map(e => e.trim())
+      .filter(Boolean);
+  }
+
   function isAllowed(email) {
     email = (email || '').trim().toLowerCase();
     if (!email) return false;
-    return (window.ALLOWED_EMAILS || []).some(
-      e => e.trim().toLowerCase() === email
+    return getAllowedEmails().some(
+      e => e.toLowerCase() === email
     );
   }
 
