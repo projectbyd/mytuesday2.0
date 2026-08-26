@@ -16,5 +16,7 @@
 
 var ALLOWED_EMAILS = [
   "namamu@gmail.com",
-  "nama@gmail.com"
+  "nama@gmail.com",
+  "dellashahab@gmail.com",
+  "della@gmail.com"
 ];
