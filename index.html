@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<!--
+  MY TUESDAY — 5 Tahun dari Sekarang
+  ------------------------------------------------
+  Aplikasi single-file (HTML + CSS + JS) berisi 18 folder pertanyaan
+  refleksi diri. Semua jawaban disimpan di localStorage browser dan
+  bisa diekspor menjadi cerita PDF atau file backup JSON.
+
+  Struktur file ini:
+    1. Bagian STYLE  — CSS, dibagi per bagian (lihat komentar /* ... */)
+    2. Bagian BODY   — 3 wadah kosong yang diisi oleh JavaScript:
+                       #homeView (halaman utama), #detailView (halaman
+                       detail per folder), #printSheet (versi cetak/PDF)
+    3. Bagian SCRIPT — JS, dibagi per bagian (lihat komentar // ...)
+-->
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>My Tuesday — 5 Tahun dari Sekarang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ====================================================================
+ * VARIABEL WARNA & RESET DASAR
+ ==================================================================== */
+:root {
+  --paper: #F6F1EA;
+  --paper-soft: #FBF8F4;
+  --ink: #2D2438;
+  --ink-mute: #7A7086;
+  --line: #E4DACB;
+  --accent: #C65A6B;
+  --accent-soft: #C65A6B22
+}
+
+* {
+  box-sizing: border-box
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Karla, sans-serif;
+  -webkit-tap-highlight-color: transparent
+}
+
+input,
+textarea,
+button {
+  font-family: inherit
+}
+
+.app {
+  max-width: 560px;
+  margin: auto;
+  min-height: 100vh;
+  padding-bottom: 50px
+}
+
+
+/* ====================================================================
+ * HALAMAN UTAMA — Hero, Progress Bar & Daftar Folder
+ ==================================================================== */
+.home-hero {
+  padding: 38px 22px 22px;
+  background: linear-gradient(180deg, #FBF8F4, var(--paper))
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 700;
+  margin: 0 0 10px
+}
+
+.hero-title,
+.detail-title {
+  font-family: Fraunces, serif;
+  font-weight: 600;
+  letter-spacing: -.01em
+}
+
+.hero-title {
+  font-size: 40px;
+  line-height: 1.02;
+  margin: 0 0 6px
+}
+
+.hero-sub {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  color: var(--ink-mute);
+  margin: 0 0 18px
+}
+
+.hero-quote {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 14.5px;
+  line-height: 1.6;
+  border-left: 2px solid var(--accent);
+  padding-left: 14px;
+  margin: 0
+}
+
+.hero-quote span {
+  display: block;
+  color: var(--ink-mute)
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px
+}
+
+.progress-track,
+.folder-progress {
+  flex: 1;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--line);
+  overflow: hidden
+}
+
+.progress-fill,
+.folder-progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #E4A339, #C65A6B, #8B4B6B, #3D3466);
+  border-radius: 5px
+}
+
+.progress-label {
+  font-size: 12px;
+  color: var(--ink-mute);
+  font-weight: 700
+}
+
+.arc-strip {
+  display: flex;
+  gap: 3px;
+  padding: 0 22px 8px
+}
+
+.arc-dot {
+  height: 4px;
+  flex: 1;
+  border-radius: 4px
+}
+
+.folder-list {
+  padding: 6px 16px 20px
+}
+
+.folder-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden
+}
+
+.folder-card:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent)
+}
+
+.folder-num {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 26px;
+  color: var(--accent);
+  min-width: 40px
+}
+
+.folder-body {
+  flex: 1
+}
+
+.folder-title {
+  font-family: Fraunces, serif;
+  font-weight: 600;
+  font-size: 15.5px;
+  margin: 0 0 3px
+}
+
+.folder-sub {
+  font-size: 12px;
+  color: var(--ink-mute);
+  margin: 0 0 8px;
+  line-height: 1.35
+}
+
+.folder-chev {
+  font-size: 20px;
+  color: var(--ink-mute)
+}
+
+
+/* ====================================================================
+ * HALAMAN UTAMA — Tombol PDF, Backup & Footer
+ ==================================================================== */
+.pdf-row,
+.backup-row {
+  padding: 0 22px;
+  margin-top: 10px
+}
+
+.backup-row {
+  display: flex;
+  gap: 10px
+}
+
+.pdf-btn,
+.backup-btn {
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  font-weight: 700
+}
+
+.pdf-btn {
+  width: 100%;
+  border: none;
+  background: var(--ink);
+  color: white
+}
+
+.backup-btn {
+  flex: 1;
+  background: var(--paper-soft);
+  color: var(--ink);
+  font-size: 12px
+}
+
+.privacy-note,
+.home-footer {
+  text-align: center;
+  color: var(--ink-mute);
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 12px 28px
+}
+
+.home-footer {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 13.5px;
+  padding-bottom: 30px
+}
+
+
+/* ====================================================================
+ * HALAMAN DETAIL — Header & Judul Folder
+ ==================================================================== */
+.detail {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  z-index: 20;
+  overflow: auto
+}
+
+.detail.open {
+  display: block
+}
+
+.detail-inner {
+  max-width: 560px;
+  margin: auto;
+  padding-bottom: 60px
+}
+
+.detail-header {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(var(--paper) 70%, transparent);
+  padding: 16px;
+  z-index: 5;
+  display: flex;
+  gap: 12px;
+  align-items: center
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  font-size: 18px;
+  cursor: pointer
+}
+
+.save-toast {
+  opacity: 0;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700
+}
+
+.save-toast.show {
+  opacity: 1
+}
+
+.detail-hero {
+  padding: 4px 22px 22px
+}
+
+.detail-num {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  color: var(--accent);
+  margin: 0 0 6px
+}
+
+.detail-title {
+  font-size: 28px;
+  line-height: 1.08;
+  margin: 0 0 8px
+}
+
+.detail-sub {
+  font-size: 13.5px;
+  color: var(--ink-mute);
+  margin: 0;
+  line-height: 1.5
+}
+
+
+/* ====================================================================
+ * FORM PERTANYAAN — Field, Jawaban, Tombol Edit/Simpan
+ ==================================================================== */
+.section {
+  padding: 0 22px 24px
+}
+
+.field {
+  margin-bottom: 20px
+}
+
+.field-head {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px
+}
+
+.field-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.4
+}
+
+.edit-btn,
+.add-btn {
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap
+}
+
+.answer-view {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-height: 46px;
+  line-height: 1.5;
+  font-size: 15px;
+  white-space: pre-wrap
+}
+
+.empty {
+  color: var(--ink-mute);
+  font-style: italic;
+  font-size: 13px
+}
+
+input[type=text],
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: var(--ink);
+  resize: vertical
+}
+
+textarea {
+  min-height: 76px;
+  line-height: 1.5
+}
+
+.big {
+  min-height: 120px
+}
+
+.letter {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 15.5px
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.save-btn {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: white
+}
+
+.cancel-btn {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--ink-mute)
+}
+
+
+/* ====================================================================
+ * CHIP — Pilihan Checklist & Tampilan Jawaban
+ ==================================================================== */
+.check-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer
+}
+
+.chip input {
+  display: none
+}
+
+.chip.checked {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  font-weight: 700
+}
+
+.answer-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px
+}
+
+.answer-chip {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 20px;
+  padding: 7px 11px;
+  font-size: 12.5px
+}
+
+
+/* ====================================================================
+ * INPUT LIST & UANG (Rp)
+ ==================================================================== */
+.list-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px
+}
+
+.li-num {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  color: var(--accent);
+  width: 18px
+}
+
+.money-wrap {
+  position: relative
+}
+
+.money-wrap span {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-mute);
+  font-weight: 700
+}
+
+.money-wrap input {
+  padding-left: 40px
+}
+
+
+/* ====================================================================
+ * TIMELINE — Satu Hari Biasa (Folder 13)
+ ==================================================================== */
+.timeline-slot {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--line)
+}
+
+.tl-time {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--accent);
+  width: 52px;
+  padding-top: 9px
+}
+
+.tl-input {
+  flex: 1
+}
+
+
+/* ====================================================================
+ * PERTANYAAN TAMBAHAN (Custom Question)
+ ==================================================================== */
+.custom-box {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  margin-top: 4px
+}
+
+.custom-title {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 17px;
+  margin: 0 0 5px
+}
+
+.custom-help {
+  font-size: 12px;
+  color: var(--ink-mute);
+  line-height: 1.5;
+  margin: 0 0 12px
+}
+
+.custom-card {
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 10px
+}
+
+.custom-q {
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 8px
+}
+
+.custom-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px
+}
+
+.delete-btn {
+  border: 0;
+  background: none;
+  color: #9b5863;
+  text-decoration: underline;
+  font-size: 11px;
+  cursor: pointer
+}
+
+
+/* ====================================================================
+ * GALERI FOTO
+ ==================================================================== */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px
+}
+
+.gal-item,
+.gal-add {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--paper-soft);
+  position: relative
+}
+
+.gal-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover
+}
+
+.gal-del {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  border: 0;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  background: #2D2438cc;
+  color: white;
+  cursor: pointer
+}
+
+.gal-add {
+  border-style: dashed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--ink-mute);
+  cursor: pointer
+}
+
+.gal-add span {
+  font-size: 20px;
+  color: var(--accent)
+}
+
+input[type=file] {
+  display: none
+}
+
+.danger-zone {
+  text-align: center;
+  padding: 10px 22px 35px
+}
+
+.danger-btn {
+  border: 0;
+  background: none;
+  text-decoration: underline;
+  color: var(--ink-mute);
+  font-size: 12px;
+  cursor: pointer
+}
+
+
+/* ====================================================================
+ * MODE CETAK — Pengaturan Dasar Print/PDF
+ ==================================================================== */
+.print-sheet {
+  display: none
+}
+
+@media print {
+  body * {
+    visibility: hidden
+  }
+
+  .print-sheet,
+  .print-sheet * {
+    visibility: visible
+  }
+
+  .print-sheet {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%
+  }
+
+  @page {
+    margin: 16mm 14mm
+  }
+}
+
+
+/* ====================================================================
+ * MODE CETAK — Halaman Cerita PDF (Sampul, Isi, Penutup)
+ ==================================================================== */
+.ph-cover {
+  padding: 65px 0 40px;
+  text-align: center;
+  page-break-after: always
+}
+
+.ph-cover .eb {
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: #8B4B6B;
+  font-weight: 700
+}
+
+.ph-cover h1 {
+  font-family: Fraunces, serif;
+  font-size: 36px;
+  margin: 14px 0 8px
+}
+
+.ph-cover h2 {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 17px;
+  color: #7A7086
+}
+
+.ph-cover blockquote {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  line-height: 1.7;
+  max-width: 420px;
+  margin: 28px auto
+}
+
+.story {
+  max-width: 720px;
+  margin: auto
+}
+
+.story-section {
+  margin-bottom: 26px;
+  break-inside: avoid
+}
+
+.story-section h2 {
+  font-family: Fraunces, serif;
+  font-size: 22px;
+  margin: 0 0 9px
+}
+
+.story-section p {
+  font-family: Karla, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.8;
+  margin: 0 0 10px
+}
+
+.story-section .quote {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 15px;
+  border-left: 2px solid #C65A6B;
+  padding-left: 14px
+}
+
+.story-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px
+}
+
+.story-images img {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 8px
+}
+
+.story-end {
+  page-break-before: always;
+  text-align: center;
+  padding-top: 50px
+}
+
+.story-end h2 {
+  font-family: Fraunces, serif;
+  font-size: 28px
+}
+
+.story-end p {
+  font-family: Fraunces, serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.8
+}
+</style>
+</head>
+<body>
+
+<!-- Penjaga login: cek email di allowed-emails.csv, lempar ke login.html kalau belum masuk -->
+<script src="auth-guard.js"></script>
+
+<div class="app" id="homeView"></div>
+<div class="detail" id="detailView"></div>
+<div class="print-sheet" id="printSheet"></div>
+
+<script>
+// ======================================================================
+// DATA & KONSTANTA — Daftar 18 folder pertanyaan (CATS), warna gradasi (accent)
+// ======================================================================
+const TIME_SLOTS = ["06.00", "07.00", "08.00", "09.00", "10.00", "11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00", "21.00"];
+const F = (k, l, t = 'area', x = {}) => ({
+  k,
+  l,
+  t,
+  ...x
+});
+const CATS = [{
+  id: 'c0',
+  num: '00',
+  title: 'Intro',
+  sub: 'Titik awal cerita ini.',
+  fields: [F('tanggal', 'Tanggal aku menulis ini', 'text'), F('usia', 'Usiaku sekarang', 'text'), F('tahun', 'Tahun yang sedang aku bayangkan', 'text')]
+}, {
+  id: 'c1',
+  num: '01',
+  title: 'My Morning Ritual',
+  sub: 'Di selasa pagi ini.',
+  fields: [F('jam_bangun', 'Aku bangun pukul', 'text'), F('hal_pertama', 'Hal pertama yang aku lakukan adalah'), F('perasaan_bangun', 'Aku bangun dengan perasaan', 'text'), F('alasan_tenang', 'Aku tidak terburu-buru karena'), F('suasana_kamar', 'Aku melihat kamar tidurku dan suasananya seperti'), F('cahaya_pagi', 'Cahaya pagi yang masuk ke kamar'), F('syukur_pagi', 'Hal pertama yang membuatku bersyukur pagi ini')]
+}, {
+  id: 'c2',
+  num: '02',
+  title: 'Hubunganku dengan Allah',
+  sub: 'Yang menopang semuanya.',
+  fields: [F('ibadah', 'Setelah bangun, aku:', 'check', {
+    opts: ['Shalat Subuh', 'Dzikir', 'Membaca Al-Qur\'an', 'Berdoa', 'Journaling'],
+    other: true
+  }), F('hubungan_spiritual', 'Aku ingin hubungan spiritualku 5 tahun dari sekarang terasa seperti'), F('rasa_ibadah', 'Hal yang paling ingin aku rasakan dalam ibadahku'), F('doa_sering', 'Doa yang paling sering aku panjatkan')]
+}, {
+  id: 'c3',
+  num: '03',
+  title: 'Tubuhku & Kesehatanku',
+  sub: 'Tentang tubuh yang kurawat, dan hidup yang ingin kunikmati.',
+  fields: [F('tubuh_terasa', 'Aku ingin tubuhku terasa'), F('kondisi_fisik', 'Berat badan / kondisi fisik yang membuatku nyaman', 'text'), F('olahraga', 'Olahraga yang aku lakukan', 'text'), F('jam_olahraga', 'Aku biasanya olahraga pada pukul', 'text'), F('cara_makan', 'Aku makan dengan cara'), F('jam_tidur', 'Aku tidur sekitar pukul', 'text'), F('cermin', 'Aku ingin ketika melihat diriku di cermin, aku merasa'), F('rawat_diri', 'Aku merawat diriku dengan')]
+}, {
+  id: 'c4',
+  num: '04',
+  title: 'Ritual Kecantikan & Self-Care',
+  sub: 'A little care, a lot of me.',
+  fields: [F('setelah_olahraga', 'Setelah olahraga aku'), F('body_care', 'Sabun/body care yang aku gunakan', 'text'), F('skincare', 'Skincare-ku'), F('parfum', 'Parfum yang aku pakai', 'text'), F('aku_banget', 'Hal kecil yang membuatku merasa "aku banget"'), F('beli_barang', 'Aku membeli barang yang aku suka dengan perasaan'), F('tidak_bersalah_beli', 'Aku tidak lagi merasa bersalah ketika')]
+}, {
+  id: 'c5',
+  num: '05',
+  title: 'Rumahku',
+  sub: 'Tempat semua cerita ini terjadi.',
+  fields: [F('tinggal', 'Aku tinggal di:', 'check', {
+    opts: ['Rumah sendiri', 'Rumah hasil renovasi', 'Apartemen'],
+    other: true
+  }), F('lokasi', 'Lokasinya', 'text'), F('rumah_seperti', 'Rumahku seperti apa?'), F('gaya_rumah', 'Gaya rumahku', 'text'), F('warna_dominan', 'Warna yang dominan', 'text'), F('ruangan_favorit', 'Ruangan favoritku', 'text'), F('hal_disuka_rumah', 'Hal yang paling aku suka dari rumahku'), F('fasilitas', 'Di rumah ini aku ingin ada:', 'check', {
+    opts: ['Kolam renang', 'Home gym', 'Dapur yang nyaman', 'Taman', 'Ruang kerja', 'Ruang bermain anak', 'Ruang keluarga', 'Coffee corner'],
+    other: true
+  }), F('suasana_malam', 'Suasana rumahku pada malam hari')]
+}, {
+  id: 'c6',
+  num: '06',
+  title: 'Love is . . . .',
+  sub: 'Tentang cinta yang terasa seperti pulang.',
+  fields: [F('pagi_bersama', 'Pagi hari aku dan pasanganku biasanya'), F('ngobrol', 'Kami ngobrol tentang'), F('hubungan_terasa', 'Hubungan kami terasa'), F('waktu_berdua', 'Kami punya waktu berdua untuk'), F('pergi_berdua', 'Kami biasanya pergi berdua ke', 'text'), F('syukur_pernikahan', 'Hal yang paling aku syukuri dari kehidupan pernikahanku'), F('jadi_pasangan', 'Aku ingin menjadi pasangan yang')]
+}, {
+  id: 'c7',
+  num: '07',
+  title: 'Our Little Ones',
+  sub: 'Alasan aku ingin cepat pulang.',
+  fields: [F('usia_anak', 'Anak-anakku 5 tahun dari sekarang berusia', 'text'), F('anak_seperti', 'Mereka seperti apa?'), F('hubungan_anak', 'Hubunganku dengan mereka'), F('jadi_ibu', 'Aku ingin menjadi ibu yang'), F('aktivitas_bersama', 'Hal yang paling sering kami lakukan bersama'), F('diingat_sebagai', 'Aku ingin mereka mengingat masa kecilnya sebagai'), F('waktu_untuk_anak', 'Aku punya waktu untuk:', 'check', {
+    opts: ['Mengantar sekolah', 'Menjemput sekolah', 'Makan bersama', 'Membantu belajar', 'Bermain', 'Jalan-jalan', 'Liburan', 'Menonton / aktivitas keluarga'],
+    other: true
+  }), F('tidak_melewatkan', 'Aku tidak ingin melewatkan')]
+}, {
+  id: 'c9',
+  num: '08',
+  title: 'Pekerjaan, Bisnis & Ide-Ideku',
+  sub: 'Peranku dalam apa yang aku bangun, dan ide yang menjadi nyata.',
+  fields: [F('bekerja_sebagai', 'Aku bekerja sebagai', 'text'), F('jenis_usaha', 'Aku punya:', 'check', {
+    opts: ['Perusahaan sendiri', 'Beberapa bisnis', 'Pekerjaan tetap + bisnis', 'Investasi'],
+    other: true
+  }), F('nama_bidang', 'Nama / bidang perusahaan atau bisnis utamaku', 'text'), F('jual_apa', 'Bisnis ini menjual'), F('target_customer', 'Target customer-nya'), F('peran_utama', 'Peran utamaku di perusahaan:', 'check', {
+    opts: ['Mencari ide', 'Menentukan business model', 'Strategi', 'Mengembangkan produk', 'Mencari peluang', 'Bertemu partner', 'Mengawasi perusahaan'],
+    other: true
+  }), F('tidak_dikerjakan_sendiri', 'Hal yang TIDAK lagi aku kerjakan sendiri'), F('orang_bersama', 'Orang-orang yang bekerja bersamaku'), F('jam_kerja', 'Jam kerjaku biasanya', 'text'), F('bebas_ubah_jadwal', 'Aku bebas mengubah jadwalku ketika'), F('bidang_bisnis', 'Aku punya bisnis di bidang', 'list', {
+    n: 3
+  }), F('sumber_penghasilan', 'Sumber penghasilan bisnisku'), F('bagian_favorit', 'Aku paling suka bagian'), F('dibantu', 'Aku punya orang yang membantu:', 'check', {
+    opts: ['Marketing', 'Sales', 'Operasional', 'Finance', 'Admin', 'Product', 'Design', 'Management'],
+    other: true
+  }), F('waktu_founder', 'Aku sebagai founder menghabiskan waktu untuk'), F('menemukan_ide', 'Aku menemukan ide bisnis baru dengan cara'), F('sistem_ide', 'Ketika punya ide baru, sistemku adalah'), F('tidak_tinggalkan_ide', 'Aku tidak lagi meninggalkan ide hanya karena')]
+}, {
+  id: 'c11',
+  num: '09',
+  title: 'Money Money Money',
+  sub: 'Angka yang mendukung ketenangan.',
+  fields: [F('penghasilan_keluarga', 'Penghasilan keluarga per bulan yang aku bayangkan', 'money'), F('penghasilan_pribadi', 'Penghasilan pribadiku', 'money'), F('penghasilan_bisnis', 'Penghasilan dari bisnis', 'money'), F('penghasilan_investasi', 'Penghasilan dari investasi/aset', 'money'), F('aset', 'Aku memiliki:', 'check', {
+    opts: ['Dana darurat', 'Tabungan', 'Investasi', 'Properti', 'Bisnis'],
+    other: true
+  }), F('aman_finansial', 'Aku merasa aman secara finansial karena'), F('beli_tanpa_khawatir', 'Aku bisa membeli sesuatu yang aku inginkan tanpa khawatir ketika'), F('tidak_lagi_perasaan', 'Aku tidak lagi hidup dengan perasaan')]
+}, {
+  id: 'c12',
+  num: '10',
+  title: 'Gaya Hidupku',
+  sub: 'Kenikmatan yang aku izinkan untuk diri sendiri.',
+  fields: [F('mobil', 'Aku punya mobil', 'text'), F('liburan', 'Aku pergi liburan', 'text'), F('kali_setahun', 'Dalam setahun aku ingin bepergian sekitar (kali)', 'text'), F('destinasi', 'Destinasi yang sering aku kunjungi', 'text'), F('dinikmati', 'Aku menikmati:', 'check', {
+    opts: ['Cafe', 'Restaurant', 'Shopping', 'Spa', 'Traveling', 'Hotel bagus', 'Concert', 'Hobi'],
+    other: true
+  }), F('tanpa_bersalah_kecil', 'Hal-hal kecil yang sekarang bisa aku nikmati tanpa merasa bersalah')]
+}, {
+  id: 'c13',
+  num: '11',
+  title: 'Teman, Lingkungan & Relasi',
+  sub: 'Orang-orang yang membentukku.',
+  fields: [F('orang_sekitar', 'Orang-orang di sekitarku adalah'), F('teman_seperti', 'Aku punya teman yang'), F('lebih_sering', 'Aku ingin lebih sering'), F('lingkungan_seperti', 'Aku ingin berada di lingkungan yang'), F('menginspirasi', 'Orang-orang yang menginspirasiku'), F('jadi_orang', 'Aku menjadi orang yang')]
+}, {
+  id: 'c14',
+  num: '12',
+  title: 'Me, My Self and I',
+  sub: 'Pribadi yang sedang aku tuju.',
+  fields: [F('diriku_5th', 'Aku 5 tahun dari sekarang adalah perempuan yang', 'area', {
+    big: true
+  }), F('sifat', 'Aku lebih:', 'check', {
+    opts: ['Percaya diri', 'Tenang', 'Berani', 'Disiplin', 'Kreatif', 'Mandiri', 'Spiritual', 'Sehat', 'Kaya', 'Bebas', 'Lembut', 'Tegas'],
+    other: true
+  }), F('dulu_sulit', 'Hal yang dulu sangat sulit bagiku tetapi sekarang sudah biasa'), F('berhenti_merasa', 'Aku sudah berhenti merasa', 'text'), F('sudah_berani', 'Aku sudah berani'), F('bangga_diri14', 'Aku bangga kepada diriku karena')]
+}, {
+  id: 'c15',
+  num: '13',
+  title: 'Satu Hari Biasa',
+  sub: 'Ceritakan hari Selasa ini seperti sebuah cerita.',
+  timeline: true
+}, {
+  id: 'c16',
+  num: '14',
+  title: 'Perasaanku',
+  sub: 'Bukan apa yang aku punya, tapi bagaimana rasanya.',
+  fields: [F('perasaan_hari', 'Sepanjang hari ini aku merasa'), F('bebas_karena', 'Aku merasa bebas karena'), F('kaya_karena', 'Aku merasa kaya karena'), F('berhasil_karena', 'Aku merasa berhasil karena'), F('tenang_karena', 'Aku merasa tenang karena'), F('dekat_keluarga', 'Aku merasa dekat dengan keluargaku karena'), F('bangga_karena16', 'Aku merasa bangga pada diriku karena'), F('kalimat_hidup', 'Kalimat yang menggambarkan hidupku', 'area', {
+    letter: true
+  })]
+}, {
+  id: 'c17',
+  num: '15',
+  title: 'Apa yang Sebenarnya Aku Cari?',
+  sub: 'Jika semua benda dan angka dihilangkan.',
+  fields: [F('kehidupan_sebenarnya', 'Kehidupan yang sebenarnya aku inginkan adalah', 'area', {
+    big: true
+  }), F('hidup_terasa17', 'Aku ingin hidupku terasa', 'text'), F('lebih_banyak', 'Aku ingin memiliki lebih banyak', 'text'), F('lebih_sedikit', 'Aku ingin memiliki lebih sedikit', 'text'), F('kebebasan_untuk', 'Aku ingin punya kebebasan untuk'), F('tidak_ingin_kembali', 'Aku tidak ingin kembali ke kehidupan yang')]
+}, {
+  id: 'c18',
+  num: '16',
+  title: 'Surat dari 5 Tahun Depan',
+  sub: 'Dear You, sekarang kamu sedang membaca surat ini dari masa depan.',
+  fields: [F('dulu_merasa', 'Aku tahu kamu dulu sering merasa', 'area', {
+    letter: true
+  }), F('dulu_berpikir', 'Aku ingat dulu kamu sering berpikir', 'area', {
+    letter: true
+  }), F('sekarang_sudah', 'Tapi lihat kita sekarang. Sekarang kita sudah', 'area', {
+    big: true,
+    letter: true
+  }), F('tidak_perlu_takut', 'Hal yang ternyata tidak perlu kamu takutkan dulu', 'area', {
+    letter: true
+  }), F('bisa_dilakukan', 'Hal yang ternyata bisa kamu lakukan', 'area', {
+    letter: true
+  }), F('paling_dibanggakan', 'Hal yang paling aku banggakan dari kamu', 'area', {
+    letter: true
+  }), F('ingin_kamu_tahu', 'Aku ingin kamu tahu bahwa', 'area', {
+    letter: true
+  }), F('mulai_dari', 'Jangan terlalu takut. Mulai saja dari', 'text')]
+}, {
+  id: 'c19',
+  num: '17',
+  title: 'My Non-Negotiables',
+  sub: 'Yang tidak akan aku tukar dengan apa pun.',
+  fields: [F('daftar_nn', 'Dalam kehidupan yang aku bangun, aku tidak ingin kehilangan', 'list', {
+    n: 5
+  }), F('waktu_selalu', 'Aku ingin selalu punya waktu untuk'), F('jaga_selalu', 'Aku ingin selalu menjaga'), F('tidak_korbankan', 'Aku tidak akan mengorbankan')]
+}, {
+  id: 'c20',
+  num: '18',
+  title: 'Core of My Life',
+  sub: 'Aku sedang membangun kehidupan di mana...',
+  fields: [F('cukup_uang', 'Aku punya cukup uang untuk'), F('cukup_waktu', 'Aku punya cukup waktu untuk'), F('keluarga_yang', 'Aku punya keluarga yang'), F('pekerjaan_yang', 'Aku punya pekerjaan/bisnis yang'), F('tubuh_yang', 'Aku punya tubuh yang'), F('hubungan_allah_yang', 'Aku punya hubungan dengan Allah yang'), F('perempuan_yang', 'Aku merasa menjadi perempuan yang')],
+  core: true
+}];
+const stops = ['#E4A339', '#C65A6B', '#8B4B6B', '#3D3466'];
+
+function hexToRgb(h) {
+  h = h.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]
+}
+
+function lerp(a, b, t) {
+  let A = hexToRgb(a),
+    B = hexToRgb(b);
+  return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * t).toString(16).padStart(2, '0')).join('')
+}
+CATS.forEach((c, i) => {
+  let t = i / (CATS.length - 1),
+    s = t * 3,
+    n = Math.min(Math.floor(s), 2);
+  c.accent = lerp(stops[n], stops[n + 1], s - n)
+});
+
+// ======================================================================
+// STATE & PENYIMPANAN — state global + baca/tulis ke localStorage
+// ======================================================================
+const state = {
+  data: {},
+  editing: {}
+};
+
+function emptyData() {
+  return {
+    values: {},
+    checks: {},
+    images: [],
+    custom: [],
+    deleted: {}
+  }
+}
+
+function normalize(v) {
+  return {
+    values: v?.values || {},
+    checks: v?.checks || {},
+    images: v?.images || [],
+    custom: v?.custom || [],
+    deleted: v?.deleted || {}
+  }
+}
+
+function loadAll() {
+  CATS.forEach(c => {
+    try {
+      state.data[c.id] = normalize(JSON.parse(localStorage.getItem('cat:' + c.id) || 'null'))
+    } catch (e) {
+      state.data[c.id] = emptyData()
+    }
+  })
+}
+
+function saveCat(id) {
+  localStorage.setItem('cat:' + id, JSON.stringify(state.data[id]));
+  flashToast();
+  renderHome()
+}
+
+
+// ======================================================================
+// HELPER — escape HTML & ambil jawaban dari state
+// ======================================================================
+function esc(s) {
+  return String(s || '').replace(/[&<>]/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+  } [m]))
+}
+
+function attr(s) {
+  return esc(s).replace(/"/g, '&quot;')
+}
+
+function getAnswer(cat, f) {
+  let d = state.data[cat.id];
+  if (f.t === 'check') {
+    let c = d.checks[f.k] || {},
+      a = (f.opts || []).filter(o => c.opts?.[o]);
+    if (c.other?.trim()) a.push(c.other.trim());
+    return a.join(', ')
+  }
+  if (f.t === 'list') {
+    return Array.from({
+      length: f.n
+    }, (_, i) => d.values[f.k + '__' + i]).filter(Boolean).map((x, i) => (i + 1) + '. ' + x).join('\n')
+  }
+  return (d.values[f.k] || '').trim()
+}
+
+function fieldFilled(c, f) {
+  return !!getAnswer(c, f)
+}
+
+function catProgress(c) {
+  let d = state.data[c.id];
+  if (c.timeline) {
+    let x = TIME_SLOTS.filter(t => (d.values['time__' + t] || '').trim()).length + (d.custom || []).filter(x => x.answer?.trim()).length;
+    return {
+      filled: x,
+      total: TIME_SLOTS.length + (d.custom || []).length
+    }
+  }
+  let visible = c.fields.filter(f => !d.deleted?.[f.k]),
+    base = visible.filter(f => fieldFilled(c, f)).length,
+    custom = (d.custom || []).filter(x => x.answer?.trim()).length;
+  return {
+    filled: base + custom,
+    total: visible.length + (d.custom || []).length
+  }
+}
+
+function overallProgress() {
+  let a = 0,
+    b = 0;
+  CATS.forEach(c => {
+    let p = catProgress(c);
+    a += p.filled;
+    b += p.total
+  });
+  return b ? Math.round(a / b * 100) : 0
+}
+
+
+// ======================================================================
+// RENDER HALAMAN UTAMA — daftar folder + progress
+// ======================================================================
+function renderHome() {
+  let pct = overallProgress(),
+    cards = CATS.map(c => {
+      let p = catProgress(c),
+        pc = p.total ? Math.round(p.filled / p.total * 100) : 0,
+        photos = state.data[c.id].images.length;
+      return `<div class="folder-card" style="--accent:${c.accent}" onclick="openDetail('${c.id}')"><div class="folder-num">${c.num}</div><div class="folder-body"><p class="folder-title">${c.title}${photos?` · ${photos} foto`:''}</p><p class="folder-sub">${c.sub}</p><div class="folder-progress"><i style="width:${pc}%;background:${c.accent}"></i></div></div><div class="folder-chev">›</div></div>`
+    }).join('');
+  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">5 Tahun dari Sekarang</p><h1 class="hero-title">MY TUESDAY</h1><p class="hero-sub">kehidupan yang sedang aku bangun</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">"My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku."<br><a href="#" onclick="logout();return false;" style="color:var(--ink-mute);text-decoration:underline;font-style:normal;font-size:11px">Keluar</a></div>`
+}
+
+// ======================================================================
+// BUKA / TUTUP HALAMAN DETAIL FOLDER
+// ======================================================================
+let currentCat = null;
+
+function openDetail(id) {
+  currentCat = id;
+  renderDetail(CATS.find(c => c.id === id));
+  let e = document.getElementById('detailView');
+  e.classList.add('open');
+  e.scrollTop = 0;
+  document.body.style.overflow = 'hidden'
+}
+
+function closeDetail() {
+  document.getElementById('detailView').classList.remove('open');
+  document.body.style.overflow = '';
+  renderHome()
+}
+
+function editId(c, k) {
+  return c + '::' + k
+}
+
+
+// ======================================================================
+// MODE EDIT — mulai edit, batal, simpan jawaban
+// ======================================================================
+function beginEdit(cid, key) {
+  let c = CATS.find(x => x.id === cid),
+    d = state.data[cid],
+    f = c.fields?.find(x => x.k === key);
+  state.editing[editId(cid, key)] = {
+    value: d.values[key] || '',
+    check: JSON.parse(JSON.stringify(d.checks[key] || {
+      opts: {},
+      other: ''
+    })),
+    list: f?.t === 'list' ? Object.fromEntries(Array.from({
+      length: f.n
+    }, (_, i) => [key + '__' + i, d.values[key + '__' + i] || ''])) : null
+  };
+  renderDetail(c)
+}
+
+function cancelEdit(cid, key) {
+  delete state.editing[editId(cid, key)];
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+function saveEdit(cid, key) {
+  let e = state.editing[editId(cid, key)],
+    c = CATS.find(x => x.id === cid),
+    f = c.fields?.find(x => x.k === key),
+    d = state.data[cid];
+  if (!e) return;
+  if (f?.t === 'check') d.checks[key] = e.check;
+  else if (f?.t === 'list') Object.assign(d.values, e.list);
+  else d.values[key] = e.value;
+  delete state.editing[editId(cid, key)];
+  saveCat(cid);
+  renderDetail(c)
+}
+
+
+// ======================================================================
+// RENDER FORM PERTANYAAN — HTML untuk tiap tipe field (text/area/check/list)
+// ======================================================================
+function head(label, c, k) {
+  return `<div class="field-head"><label class="field-label">${esc(label)}</label><div style="display:flex;gap:6px"><button class="edit-btn" onclick="beginEdit('${c}','${attr(k)}')">✎ Edit</button><button class="delete-btn" onclick="deleteBasic('${c}','${attr(k)}')">Hapus</button></div></div>`
+}
+
+function deleteBasic(cid, key) {
+  if (!confirm('Hapus pertanyaan ini dari folder? Jawaban lama tetap tersimpan di backup tetapi tidak akan ditampilkan.')) return;
+  state.data[cid].deleted = state.data[cid].deleted || {};
+  state.data[cid].deleted[key] = true;
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid));
+  renderHome()
+}
+
+function actions(c, k) {
+  return `<div class="edit-actions"><button class="cancel-btn" onclick="cancelEdit('${c}','${attr(k)}')">Batal</button><button class="save-btn" onclick="saveEdit('${c}','${attr(k)}')">✓ Save</button></div>`
+}
+
+function fieldHTML(c, f) {
+  let d = state.data[c.id];
+  if (d.deleted?.[f.k]) return '';
+  let ed = state.editing[editId(c.id, f.k)],
+    editing = !!ed,
+    ans = getAnswer(c, f);
+  if (!editing) return `<div class="field">${head(f.l,c.id,f.k)}<div class="answer-view ${ans?'':'empty'}">${ans?esc(ans):'Belum diisi.'}</div></div>`;
+  if (f.t === 'check') {
+    let chips = (f.opts || []).map(o => `<label class="chip ${ed.check.opts?.[o]?'checked':''}"><input type="checkbox" data-kind="check" data-c="${c.id}" data-k="${attr(f.k)}" data-o="${attr(o)}" ${ed.check.opts?.[o]?'checked':''}>${esc(o)}</label>`).join('');
+    return `<div class="field">${head(f.l,c.id,f.k)}<div class="check-grid">${chips}</div>${f.other?`<input type="text" data-kind="other" data-c="${c.id}" data-k="${attr(f.k)}" value="${attr(ed.check.other||'')}" placeholder="Lainnya...">`:''}${actions(c.id,f.k)}</div>`
+  }
+  if (f.t === 'list') {
+    let rows = Array.from({
+      length: f.n
+    }, (_, i) => `<div class="list-item"><span class="li-num">${i+1}</span><input type="text" data-kind="list" data-c="${c.id}" data-parent="${f.k}" data-k="${f.k}__${i}" value="${attr(ed.list[f.k+'__'+i]||'')}" placeholder="Tulis di sini..."></div>`).join('');
+    return `<div class="field">${head(f.l,c.id,f.k)}${rows}${actions(c.id,f.k)}</div>`
+  }
+  let control = f.t === 'text' || f.t === 'money' ? `<input type="text" ${f.t==='money'?'inputmode="numeric"':''} data-kind="value" data-c="${c.id}" data-k="${attr(f.k)}" value="${attr(ed.value)}" placeholder="${f.t==='money'?'0 / bulan':'Tulis di sini...'}">` : `<textarea class="${f.big?'big':''} ${f.letter?'letter':''}" data-kind="value" data-c="${c.id}" data-k="${attr(f.k)}" placeholder="Tulis di sini...">${esc(ed.value)}</textarea>`;
+  if (f.t === 'money') control = `<div class="money-wrap"><span>Rp</span>${control}</div>`;
+  return `<div class="field">${head(f.l,c.id,f.k)}${control}${actions(c.id,f.k)}</div>`
+}
+
+function timelineHTML(c) {
+  let d = state.data[c.id];
+  return `<div class="section">${TIME_SLOTS.map(t=>{let k='time__'+t,e=state.editing[editId(c.id,k)],v=e?e.value:(d.values[k]||'');return`<div class="timeline-slot"><div class="tl-time">${t}</div><div class="tl-input">${e?`<textarea data-kind="value" data-c="${c.id}" data-k="${k}">${esc(v)}</textarea>${actions(c.id,k)}`:`${head('Apa yang sedang aku lakukan?',c.id,k)}<div class="answer-view ${v?'':'empty'}">${v?esc(v):'Belum diisi.'}</div>`}</div></div>`}).join('')}</div>`
+}
+
+
+// ======================================================================
+// PERTANYAAN TAMBAHAN — tambah/edit/hapus custom question
+// ======================================================================
+function customHTML(c) {
+  let items = state.data[c.id].custom || [];
+  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Pertanyaan tambahan akan muncul tepat di bawah pertanyaan bawaan dan memiliki format yang sama.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
+}
+
+function customCard(cid, x) {
+  let ed = state.editing[editId(cid, 'custom:' + x.id)];
+  if (ed) return `<div class="field"><div class="field-head"><input type="text" data-kind="custom-q" data-c="${cid}" data-id="${x.id}" value="${attr(ed.q)}" placeholder="Tulis pertanyaan..."></div><textarea data-kind="custom-a" data-c="${cid}" data-id="${x.id}" placeholder="Tulis jawabanmu...">${esc(ed.a)}</textarea><div class="edit-actions"><button class="cancel-btn" onclick="cancelCustom('${cid}','${x.id}')">Batal</button><button class="save-btn" onclick="saveCustom('${cid}','${x.id}')">✓ Save</button></div></div>`;
+  return `<div class="field"><div class="field-head"><label class="field-label">${esc(x.q||'Pertanyaan baru')}</label><div style="display:flex;gap:6px"><button class="edit-btn" onclick="editCustom('${cid}','${x.id}')">✎ Edit</button><button class="delete-btn" onclick="deleteCustom('${cid}','${x.id}')">Hapus</button></div></div><div class="answer-view ${x.answer?.trim()?'':'empty'}">${x.answer?.trim()?esc(x.answer):'Belum diisi.'}</div></div>`
+}
+
+function addCustom(cid) {
+  let id = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  state.data[cid].custom.push({
+    id,
+    q: '',
+    answer: ''
+  });
+  state.editing[editId(cid, 'custom:' + id)] = {
+    q: '',
+    a: ''
+  };
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+function editCustom(cid, id) {
+  let x = state.data[cid].custom.find(x => x.id === id);
+  state.editing[editId(cid, 'custom:' + id)] = {
+    q: x.q || '',
+    a: x.answer || ''
+  };
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+function cancelCustom(cid, id) {
+  delete state.editing[editId(cid, 'custom:' + id)];
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+function saveCustom(cid, id) {
+  let ed = state.editing[editId(cid, 'custom:' + id)],
+    x = state.data[cid].custom.find(x => x.id === id);
+  if (!ed || !x) return;
+  x.q = ed.q.trim() || 'Pertanyaan baru';
+  x.answer = ed.a;
+  delete state.editing[editId(cid, 'custom:' + id)];
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+function deleteCustom(cid, id) {
+  if (!confirm('Hapus pertanyaan ini?')) return;
+  state.data[cid].custom = state.data[cid].custom.filter(x => x.id !== id);
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid));
+  renderHome()
+}
+
+
+// ======================================================================
+// GALERI FOTO & RENDER DETAIL LENGKAP
+// ======================================================================
+function galleryHTML(c) {
+  let imgs = state.data[c.id].images;
+  return `<div class="section"><div class="field-label" style="margin-bottom:10px">Foto & Inspirasi</div><div class="gallery-grid">${imgs.map(i=>`<div class="gal-item"><img src="${i.src}"><button class="gal-del" onclick="deleteImage('${c.id}','${i.id}')">✕</button></div>`).join('')}<label class="gal-add"><span>+</span>Tambah Foto<input type="file" accept="image/*" multiple onchange="handleImages('${c.id}',this.files)"></label></div></div>`
+}
+
+function renderDetail(c) {
+  let body = c.timeline ? timelineHTML(c) : `<div class="section">${c.fields.map(f=>fieldHTML(c,f)).join('')}</div>`;
+  body += customHTML(c) + galleryHTML(c);
+  document.getElementById('detailView').innerHTML = `<div class="detail-inner"><div class="detail-header"><button class="back-btn" onclick="closeDetail()">←</button><div class="save-toast" id="saveToast">Tersimpan</div></div><div class="detail-hero"><p class="detail-num">${c.num==='00'?'Sampul':c.num+' / 18'}</p><h2 class="detail-title">${c.title}</h2><p class="detail-sub">${c.sub}</p></div>${body}<div class="danger-zone"><button class="danger-btn" onclick="clearCategory('${c.id}')">Hapus isian kategori ini</button></div></div>`;
+  document.getElementById('detailView').style.setProperty('--accent', c.accent)
+}
+
+// ======================================================================
+// EVENT LISTENER GLOBAL — input teks & checkbox
+// ======================================================================
+document.addEventListener('input', e => {
+  let t = e.target,
+    k = t.dataset.kind,
+    c = t.dataset.c;
+  if (!k || !c) return;
+  if (k === 'value') {
+    let ed = state.editing[editId(c, t.dataset.k)];
+    if (ed) ed.value = t.value
+  } else if (k === 'list') {
+    let ed = state.editing[editId(c, t.dataset.parent)];
+    if (ed) ed.list[t.dataset.k] = t.value
+  } else if (k === 'other') {
+    let ed = state.editing[editId(c, t.dataset.k)];
+    if (ed) ed.check.other = t.value
+  } else if (k === 'custom-q') {
+    let ed = state.editing[editId(c, 'custom:' + t.dataset.id)];
+    if (ed) ed.q = t.value
+  } else if (k === 'custom-a') {
+    let ed = state.editing[editId(c, 'custom:' + t.dataset.id)];
+    if (ed) ed.a = t.value
+  }
+});
+document.addEventListener('change', e => {
+  let t = e.target;
+  if (t.dataset.kind === 'check') {
+    let ed = state.editing[editId(t.dataset.c, t.dataset.k)];
+    ed.check.opts[t.dataset.o] = t.checked;
+    renderDetail(CATS.find(c => c.id === t.dataset.c))
+  }
+})
+
+
+// ======================================================================
+// NOTIFIKASI 'TERSIMPAN' (toast)
+// ======================================================================
+function flashToast() {
+  let t = document.getElementById('saveToast');
+  if (!t) return;
+  t.classList.add('show');
+  clearTimeout(window.toast);
+  window.toast = setTimeout(() => t.classList.remove('show'), 1100)
+}
+
+
+// ======================================================================
+// UPLOAD & KOMPRESI FOTO
+// ======================================================================
+function compressImage(file) {
+  return new Promise((res, rej) => {
+    let r = new FileReader;
+    r.onload = e => {
+      let i = new Image;
+      i.onload = () => {
+        let w = i.width,
+          h = i.height,
+          m = 1000;
+        if (w > m || h > m) {
+          let s = Math.min(m / w, m / h);
+          w *= s;
+          h *= s
+        }
+        let c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        c.getContext('2d').drawImage(i, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', .72))
+      };
+      i.src = e.target.result
+    };
+    r.onerror = rej;
+    r.readAsDataURL(file)
+  })
+}
+async function handleImages(cid, files) {
+  for (let f of files) {
+    try {
+      state.data[cid].images.push({
+        id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        src: await compressImage(f)
+      })
+    } catch (e) {}
+  }
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+function deleteImage(cid, id) {
+  state.data[cid].images = state.data[cid].images.filter(x => x.id !== id);
+  saveCat(cid);
+  renderDetail(CATS.find(c => c.id === cid))
+}
+
+
+// ======================================================================
+// HAPUS ISI SATU KATEGORI
+// ======================================================================
+function clearCategory(cid) {
+  if (!confirm('Hapus semua isian, pertanyaan tambahan, dan foto kategori ini?')) return;
+  state.data[cid] = emptyData();
+  localStorage.removeItem('cat:' + cid);
+  renderDetail(CATS.find(c => c.id === cid));
+  renderHome()
+}
+
+
+// ======================================================================
+// BACKUP & IMPORT DATA (unduh/muat file JSON)
+// ======================================================================
+function exportBackup() {
+  let b = new Blob([JSON.stringify({
+      app: 'my-tuesday',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      data: state.data
+    }, null, 2)], {
+      type: 'application/json'
+    }),
+    u = URL.createObjectURL(b),
+    a = document.createElement('a');
+  a.href = u;
+  a.download = 'my-tuesday-cadangan-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(u)
+}
+
+function triggerImport() {
+  document.getElementById('importFile').click()
+}
+
+function importBackup(files) {
+  let f = files?.[0];
+  if (!f) return;
+  let r = new FileReader;
+  r.onload = e => {
+    try {
+      let p = JSON.parse(e.target.result),
+        incoming = p.data || p;
+      if (!confirm('Ganti semua isian saat ini dengan cadangan ini?')) return;
+      if (incoming.c10) {
+        let a = normalize(incoming.c9),
+          b = normalize(incoming.c10);
+        a.values = {
+          ...a.values,
+          ...b.values
+        };
+        a.checks = {
+          ...a.checks,
+          ...b.checks
+        };
+        a.images = [...a.images, ...b.images];
+        a.custom = [...a.custom, ...b.custom];
+        incoming.c9 = a
+      }
+      CATS.forEach(c => {
+        state.data[c.id] = normalize(incoming[c.id]);
+        localStorage.setItem('cat:' + c.id, JSON.stringify(state.data[c.id]))
+      });
+      renderHome();
+      alert('Cadangan berhasil dimuat. JSON dari versi lama tetap didukung.')
+    } catch (err) {
+      alert('File cadangan tidak bisa dibaca.')
+    }
+  };
+  r.readAsText(f)
+}
+
+
+// ======================================================================
+// HELPER UNTUK CERITA — ambil jawaban per kategori (val/check/list)
+// ======================================================================
+function isDeleted(cid, k) {
+  return !!state.data[cid]?.deleted?.[k]
+}
+
+function val(cid, k) {
+  return isDeleted(cid, k) ? '' : (state.data[cid]?.values?.[k] || '').trim()
+}
+
+function check(cid, k) {
+  if (isDeleted(cid, k)) return '';
+  let c = state.data[cid]?.checks?.[k] || {},
+    a = Object.entries(c.opts || {}).filter(([, v]) => v).map(([x]) => x);
+  if (c.other?.trim()) a.push(c.other.trim());
+  return a.join(', ')
+}
+
+function list(cid, k) {
+  if (isDeleted(cid, k)) return '';
+  return Object.keys(state.data[cid]?.values || {}).filter(x => x.startsWith(k + '__')).sort().map(x => state.data[cid].values[x]).filter(Boolean).join(', ')
+}
+
+function customStory(c) {
+  return (state.data[c.id].custom || []).filter(x => x.answer?.trim()).map(x => `<p><strong>${esc(x.q||'Catatan tambahan')}.</strong> ${esc(x.answer)}</p>`).join('')
+}
+
+function sec(title, texts, cid, images = false) {
+  let arr = texts.filter(Boolean);
+  if (!arr.length && !customStory(CATS.find(c => c.id === cid))) return '';
+  let cat = CATS.find(c => c.id === cid),
+    img = images ? (state.data[cid].images || []).slice(0, 6).map(i => `<img src="${i.src}">`).join('') : '';
+  return `<section class="story-section"><h2 style="color:${cat.accent}">${title}</h2>${arr.map(x=>`<p>${x}</p>`).join('')}${customStory(cat)}${img?`<div class="story-images">${img}</div>`:''}</section>`
+}
+
+
+// ======================================================================
+// SUSUN CERITA — gabungkan semua jawaban jadi narasi (buildStory)
+// ======================================================================
+function buildStory() {
+  let s = [];
+  let jam = val('c1', 'jam_bangun'),
+    first = val('c1', 'hal_pertama'),
+    feel = val('c1', 'perasaan_bangun'),
+    room = val('c1', 'suasana_kamar'),
+    light = val('c1', 'cahaya_pagi');
+  s.push(sec('Pagi Dimulai', [jam ? `Lima tahun dari sekarang, pada sebuah hari Selasa, aku membuka mata sekitar pukul <strong>${esc(jam)}</strong>.` : '', feel ? `Aku bangun dengan perasaan ${esc(feel)}.` : '', room ? `Di sekelilingku, ${esc(room)}.` : '', light ? `Cahaya pagi ${esc(light)}.` : '', first ? `Hal pertama yang kulakukan adalah ${esc(first)}.` : ''], 'c1', true));
+  let ib = check('c2', 'ibadah'),
+    sp = val('c2', 'hubungan_spiritual'),
+    doa = val('c2', 'doa_sering');
+  s.push(sec('Yang Menopang Hari Ini', [ib ? `Pagi ini dimulai dengan ${esc(ib)}.` : '', sp ? `Hubunganku dengan Allah terasa ${esc(sp)}.` : '', doa ? `Doa yang paling sering kupanjatkan adalah tentang ${esc(doa)}.` : ''], 'c2'));
+  let body = val('c3', 'tubuh_terasa'),
+    fit = val('c3', 'kondisi_fisik'),
+    sport = val('c3', 'olahraga'),
+    food = val('c3', 'cara_makan'),
+    mirror = val('c3', 'cermin');
+  s.push(sec('Tubuh yang Kurasakan sebagai Rumah', [body ? `Tubuhku terasa ${esc(body)}.` : '', fit ? `Aku berada pada kondisi fisik yang membuatku nyaman: ${esc(fit)}.` : '', sport ? `Aku menjaga tubuhku melalui ${esc(sport)}.` : '', food ? `Aku makan dengan cara ${esc(food)}.` : '', mirror ? `Saat melihat diriku di cermin, aku merasa ${esc(mirror)}.` : ''], 'c3'));
+  let house = val('c5', 'rumah_seperti'),
+    loc = val('c5', 'lokasi'),
+    fav = val('c5', 'ruangan_favorit'),
+    night = val('c5', 'suasana_malam'),
+    fac = check('c5', 'fasilitas');
+  s.push(sec('Rumah yang Menjadi Tempat Pulang', [loc ? `Aku tinggal di ${esc(loc)}.` : '', house ? `Rumahku ${esc(house)}.` : '', fav ? `Ruangan favoritku adalah ${esc(fav)}.` : '', fac ? `Di dalamnya ada ruang untuk ${esc(fac)}.` : '', night ? `Ketika malam datang, ${esc(night)}.` : ''], 'c5', true));
+  let hus = val('c6', 'pagi_bersama'),
+    rel = val('c6', 'hubungan_terasa'),
+    talk = val('c6', 'ngobrol'),
+    two = val('c6', 'waktu_berdua');
+  s.push(sec('Tim Kecilku', [hus ? `Di pagi hari, aku dan pasanganku biasanya ${esc(hus)}.` : '', talk ? `Kami berbicara tentang ${esc(talk)}.` : '', rel ? `Hubungan kami terasa ${esc(rel)}.` : '', two ? `Kami tetap menyediakan waktu berdua untuk ${esc(two)}.` : ''], 'c6'));
+  let kids = val('c7', 'anak_seperti'),
+    mom = val('c7', 'jadi_ibu'),
+    act = val('c7', 'aktivitas_bersama'),
+    remember = val('c7', 'diingat_sebagai'),
+    kt = check('c7', 'waktu_untuk_anak');
+  s.push(sec('Anak-Anak dan Waktu yang Tidak Kulewatkan', [kids ? `Anak-anakku tumbuh menjadi ${esc(kids)}.` : '', mom ? `Aku hadir sebagai ibu yang ${esc(mom)}.` : '', act ? `Kami sering ${esc(act)} bersama.` : '', kt ? `Aku masih punya waktu untuk ${esc(kt)}.` : '', remember ? `Aku berharap mereka mengingat masa kecilnya sebagai ${esc(remember)}.` : ''], 'c7'));
+  let job = val('c9', 'bekerja_sebagai'),
+    company = val('c9', 'nama_bidang'),
+    role = check('c9', 'peran_utama'),
+    team = val('c9', 'orang_bersama'),
+    hours = val('c9', 'jam_kerja'),
+    notself = val('c9', 'tidak_dikerjakan_sendiri');
+  s.push(sec('Pekerjaan yang Kubangun', [job ? `Aku bekerja sebagai ${esc(job)}.` : '', company ? `Fokus utama pekerjaanku berada di ${esc(company)}.` : '', role ? `Peranku kini lebih banyak pada ${esc(role)}.` : '', notself ? `Aku tidak lagi mengerjakan sendiri ${esc(notself)}.` : '', team ? `Aku membangun semuanya bersama ${esc(team)}.` : '', hours ? `Jam kerjaku biasanya ${esc(hours)}.` : ''], 'c9', true));
+  let biz = list('c9', 'bidang_bisnis'),
+    income = val('c9', 'sumber_penghasilan'),
+    founder = val('c9', 'waktu_founder'),
+    system = val('c9', 'sistem_ide');
+  s.push(sec('Pekerjaan, Bisnis & Ide yang Menjadi Nyata', [biz ? `Aku memiliki dan mengembangkan bisnis di bidang ${esc(biz)}.` : '', income ? `Sumber penghasilannya datang dari ${esc(income)}.` : '', founder ? `Sebagai founder, waktuku kuhabiskan untuk ${esc(founder)}.` : '', system ? `Setiap kali sebuah ide baru datang, sistemku adalah ${esc(system)}.` : ''], 'c9'));
+  let fam = val('c11', 'penghasilan_keluarga'),
+    personal = val('c11', 'penghasilan_pribadi'),
+    safe = val('c11', 'aman_finansial'),
+    assets = check('c11', 'aset');
+  s.push(sec('Uang sebagai Penopang, Bukan Ketakutan', [fam ? `Penghasilan keluarga yang kubayangkan mencapai sekitar Rp ${esc(fam)} per bulan.` : '', personal ? `Aku juga memiliki penghasilan pribadi sekitar Rp ${esc(personal)}.` : '', assets ? `Aku membangun rasa aman melalui ${esc(assets)}.` : '', safe ? `Aku merasa aman secara finansial karena ${esc(safe)}.` : ''], 'c11'));
+  let life = check('c12', 'dinikmati'),
+    travel = val('c12', 'liburan'),
+    dest = val('c12', 'destinasi'),
+    small = val('c12', 'tanpa_bersalah_kecil');
+  s.push(sec('Hidup yang Boleh Dinikmati', [life ? `Aku mengizinkan diriku menikmati ${esc(life)}.` : '', travel ? `Aku pergi liburan ${esc(travel)}.` : '', dest ? `Beberapa tempat yang sering kudatangi adalah ${esc(dest)}.` : '', small ? `Kini aku dapat menikmati ${esc(small)} tanpa merasa bersalah.` : ''], 'c12'));
+  let self = val('c14', 'diriku_5th'),
+    traits = check('c14', 'sifat'),
+    brave = val('c14', 'sudah_berani'),
+    proud = val('c14', 'bangga_diri14');
+  s.push(sec('Perempuan yang Sedang Kutuju', [self ? `Lima tahun dari sekarang, ${esc(self)}.` : '', traits ? `Aku menjadi lebih ${esc(traits)}.` : '', brave ? `Aku sudah berani ${esc(brave)}.` : '', proud ? `Dan aku bangga pada diriku karena ${esc(proud)}.` : ''], 'c14', true));
+  let timeline = TIME_SLOTS.map(t => ({
+    t,
+    v: val('c15', 'time__' + t)
+  })).filter(x => x.v);
+  if (timeline.length) s.push(`<section class="story-section"><h2 style="color:${CATS.find(c=>c.id==='c15').accent}">Satu Hari Selasa yang Biasa</h2>${timeline.map(x=>`<p><strong>${x.t}</strong> — ${esc(x.v)}</p>`).join('')}${customStory(CATS.find(c=>c.id==='c15'))}</section>`);
+  let feelday = val('c16', 'perasaan_hari'),
+    free = val('c16', 'bebas_karena'),
+    rich = val('c16', 'kaya_karena'),
+    calm = val('c16', 'tenang_karena'),
+    quote = val('c16', 'kalimat_hidup');
+  s.push(sec('Dan Beginilah Rasanya', [feelday ? `Sepanjang hari, aku merasa ${esc(feelday)}.` : '', free ? `Aku merasa bebas karena ${esc(free)}.` : '', rich ? `Aku merasa kaya karena ${esc(rich)}.` : '', calm ? `Aku merasa tenang karena ${esc(calm)}.` : '', quote ? `<span class="quote">${esc(quote)}</span>` : ''], 'c16'));
+  let real = val('c17', 'kehidupan_sebenarnya'),
+    sense = val('c17', 'hidup_terasa17'),
+    freedom = val('c17', 'kebebasan_untuk');
+  s.push(sec('Apa yang Sebenarnya Kucari', [real ? `Pada akhirnya, kehidupan yang sebenarnya kuinginkan adalah ${esc(real)}.` : '', sense ? `Aku ingin hidupku terasa ${esc(sense)}.` : '', freedom ? `Aku ingin memiliki kebebasan untuk ${esc(freedom)}.` : ''], 'c17'));
+  let future = val('c18', 'sekarang_sudah'),
+    know = val('c18', 'ingin_kamu_tahu'),
+    start = val('c18', 'mulai_dari');
+  s.push(sec('Surat dari Masa Depan', [future ? `Jika aku dari masa depan bisa berbicara kepada diriku hari ini, aku akan berkata: lihat kita sekarang. ${esc(future)}.` : '', know ? `Aku ingin kamu tahu bahwa ${esc(know)}.` : '', start ? `Jangan terlalu takut. Mulai saja dari ${esc(start)}.` : ''], 'c18'));
+  let nn = list('c19', 'daftar_nn'),
+    always = val('c19', 'waktu_selalu'),
+    keep = val('c19', 'jaga_selalu'),
+    never = val('c19', 'tidak_korbankan');
+  s.push(sec('Yang Tidak Akan Kutukar', [nn ? `Dalam perjalanan ini, ada hal-hal yang tidak ingin kuhilangkan: ${esc(nn)}.` : '', always ? `Aku ingin selalu punya waktu untuk ${esc(always)}.` : '', keep ? `Aku ingin selalu menjaga ${esc(keep)}.` : '', never ? `Aku tidak akan mengorbankan ${esc(never)}.` : ''], 'c19'));
+  let core = ['cukup_uang', 'cukup_waktu', 'keluarga_yang', 'pekerjaan_yang', 'tubuh_yang', 'hubungan_allah_yang', 'perempuan_yang'].map(k => val('c20', k)).filter(Boolean);
+  s.push(sec('Inti dari Kehidupan yang Kubangun', core.map(x => esc(x)), 'c20'));
+  return s.filter(Boolean).join('')
+}
+
+
+// ======================================================================
+// EKSPOR PDF
+// ======================================================================
+function exportPDF() {
+  document.getElementById('printSheet').innerHTML = `<div class="ph-cover"><p class="eb">My Tuesday</p><h1>Kehidupan yang Sedang Aku Bangun</h1><h2>5 tahun dari sekarang</h2><blockquote>"Aku tidak sedang menunggu kehidupan ini terjadi.<br>Aku sedang membangunnya, sedikit demi sedikit."</blockquote></div><main class="story">${buildStory()}</main><div class="story-end"><h2>My Tuesday</h2><p>Aku tidak sedang mengejar kehidupan orang lain.<br>Aku sedang membangun kehidupan yang terasa seperti aku.</p></div>`;
+  setTimeout(() => window.print(), 180)
+}
+
+// ======================================================================
+// JALANKAN APLIKASI
+// ------------------------------------------------
+// Menunggu sinyal dari auth-guard.js (event 'mt-auth-ready') sebelum
+// menampilkan apapun, supaya tidak ada isi folder yang sempat terlihat
+// sebelum email pengguna selesai diverifikasi.
+// ======================================================================
+window.addEventListener('mt-auth-ready', () => {
+  loadAll();
+  renderHome();
+});
+</script>
+</body>
+</html>
