@@ -830,6 +830,11 @@ input[type=file] {
 </style>
 </head>
 <body>
+
+<!-- Penjaga login: cek email di allowed-emails.js, lempar ke login.html kalau belum masuk -->
+<script src="allowed-emails.js"></script>
+<script src="auth-guard.js"></script>
+
 <div class="app" id="homeView"></div>
 <div class="detail" id="detailView"></div>
 <div class="print-sheet" id="printSheet"></div>
@@ -1156,7 +1161,7 @@ function renderHome() {
         photos = state.data[c.id].images.length;
       return `<div class="folder-card" style="--accent:${c.accent}" onclick="openDetail('${c.id}')"><div class="folder-num">${c.num}</div><div class="folder-body"><p class="folder-title">${c.title}${photos?` · ${photos} foto`:''}</p><p class="folder-sub">${c.sub}</p><div class="folder-progress"><i style="width:${pc}%;background:${c.accent}"></i></div></div><div class="folder-chev">›</div></div>`
     }).join('');
-  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">5 Tahun dari Sekarang</p><h1 class="hero-title">MY TUESDAY</h1><p class="hero-sub">kehidupan yang sedang aku bangun</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">"My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku."</div>`
+  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">5 Tahun dari Sekarang</p><h1 class="hero-title">MY TUESDAY</h1><p class="hero-sub">kehidupan yang sedang aku bangun</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">"My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku."<br><a href="#" onclick="logout();return false;" style="color:var(--ink-mute);text-decoration:underline;font-style:normal;font-size:11px">Keluar</a></div>`
 }
 
 // ======================================================================
@@ -1277,7 +1282,7 @@ function timelineHTML(c) {
 // ======================================================================
 function customHTML(c) {
   let items = state.data[c.id].custom || [];
-  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Kalau suatu hari kamu punya ide baru, tambahkan pertanyaanmu sendiri di folder ini. Ia akan ikut tersimpan, masuk ke backup, dan muncul di cerita PDF.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
+  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Pertanyaan tambahan akan muncul tepat di bawah pertanyaan bawaan dan memiliki format yang sama.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
 }
 
 function customCard(cid, x) {
