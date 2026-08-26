@@ -1277,7 +1277,7 @@ function timelineHTML(c) {
 // ======================================================================
 function customHTML(c) {
   let items = state.data[c.id].custom || [];
-  return `<div class="section" style="padding-top:0"><div class="custom-help">Pertanyaan tambahan akan muncul tepat di bawah pertanyaan bawaan dan memiliki format yang sama.</div>${items.map(x=>customCard(c.id,x)).join('')}<button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
+  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Pertanyaan tambahan akan muncul tepat di bawah pertanyaan bawaan dan memiliki format yang sama.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
 }
 
 function customCard(cid, x) {
