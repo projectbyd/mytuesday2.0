@@ -6,7 +6,7 @@
 // Setiap email dipisahkan koma, dan harus diapit tanda kutip "...".
 //
 // Contoh menambah 2 email:
-//   const ALLOWED_EMAILS = [
+//   var ALLOWED_EMAILS = [
 //     "namaku@gmail.com",
 //     "emaillain@gmail.com"
 //   ];
@@ -14,7 +14,6 @@
 // Huruf besar/kecil tidak masalah, sistem akan menyamakan otomatis.
 // ======================================================================
 
-const ALLOWED_EMAILS = [
+var ALLOWED_EMAILS = [
   "namamu@gmail.com"
-  "dellashahab@gmail.com"
 ];
