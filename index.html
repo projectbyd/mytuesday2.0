@@ -1160,7 +1160,7 @@ function renderHome() {
         photos = state.data[c.id].images.length;
       return `<div class="folder-card" style="--accent:${c.accent}" onclick="openDetail('${c.id}')"><div class="folder-num">${c.num}</div><div class="folder-body"><p class="folder-title">${c.title}${photos?` · ${photos} foto`:''}</p><p class="folder-sub">${c.sub}</p><div class="folder-progress"><i style="width:${pc}%;background:${c.accent}"></i></div></div><div class="folder-chev">›</div></div>`
     }).join('');
-  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">5 Tahun dari Sekarang</p><h1 class="hero-title">MY TUESDAY</h1><p class="hero-sub">kehidupan yang sedang aku bangun</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku.<br><a href="#" onclick="logout();return false;" style="color:var(--ink-mute);text-decoration:underline;font-style:normal;font-size:11px">Keluar</a></div>`
+  document.getElementById('homeView').innerHTML = `<div class="home-hero"><p class="eyebrow">5 Tahun dari Sekarang</p><h1 class="hero-title">MY TUESDAY</h1><p class="hero-sub">kehidupan yang sedang aku bangun</p><p class="hero-quote">Aku tidak sedang menunggu kehidupan ini terjadi.<span>Aku sedang membangunnya, sedikit demi sedikit.</span></p><div class="progress-row"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-label">${pct}% terisi</div></div></div><div class="arc-strip">${CATS.map(c=>`<div class="arc-dot" style="background:${c.accent}"></div>`).join('')}</div><div class="folder-list">${cards}</div><div class="pdf-row"><button class="pdf-btn" onclick="exportPDF()">🖨 Jadikan Cerita & Ekspor PDF</button></div><div class="backup-row"><button class="backup-btn" onclick="exportBackup()">⬇ Unduh Cadangan</button><button class="backup-btn" onclick="triggerImport()">⬆ Muat Cadangan</button><input type="file" id="importFile" accept="application/json" onchange="importBackup(this.files)"></div><p class="privacy-note">Data tersimpan di browser/perangkat ini. JSON dari versi lama tetap bisa dimuat. Unduh cadangan secara berkala.</p><div class="home-footer">"My life is mine.<br>Aku sedang membangun kehidupan yang terasa seperti aku."<br><a href="#" onclick="logout();return false;" style="color:var(--ink-mute);text-decoration:underline;font-style:normal;font-size:11px">Keluar</a></div>`
 }
 
 // ======================================================================
@@ -1281,7 +1281,7 @@ function timelineHTML(c) {
 // ======================================================================
 function customHTML(c) {
   let items = state.data[c.id].custom || [];
-  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Kalau suatu hari kamu punya ide baru, tambahkan pertanyaanmu sendiri di folder ini. Ia akan ikut tersimpan, masuk ke backup, dan muncul di cerita PDF.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
+  return `<div class="section" style="padding-top:0">${items.map(x=>customCard(c.id,x)).join('')}<div class="custom-help">Pertanyaan tambahan akan muncul tepat di bawah pertanyaan bawaan dan memiliki format yang sama.</div><button class="add-btn" onclick="addCustom('${c.id}')">＋ Tambah Pertanyaan</button></div>`
 }
 
 function customCard(cid, x) {
@@ -1551,7 +1551,7 @@ function customStory(c) {
   return (state.data[c.id].custom || []).filter(x => x.answer?.trim()).map(x => `<p><strong>${esc(x.q||'Catatan tambahan')}.</strong> ${esc(x.answer)}</p>`).join('')
 }
 
-function sec(title, texts, cid, images = false) {
+function sec(title, texts, cid, images = true) {
   let arr = texts.filter(Boolean);
   if (!arr.length && !customStory(CATS.find(c => c.id === cid))) return '';
   let cat = CATS.find(c => c.id === cid),
@@ -1565,6 +1565,9 @@ function sec(title, texts, cid, images = false) {
 // ======================================================================
 function buildStory() {
   let s = [];
+  let usia = val('c0', 'usia'),
+    tahun = val('c0', 'tahun');
+  s.push(sec('Titik Awal', [usia && tahun ? `Di usia ${esc(usia)}, aku menuliskan bayangan diriku pada tahun ${esc(tahun)}.` : (usia ? `Aku menuliskan ini di usia ${esc(usia)}.` : ''), 'Ini bukan ramalan, tapi peta yang sedang aku susun sendiri.'], 'c0'));
   let jam = val('c1', 'jam_bangun'),
     first = val('c1', 'hal_pertama'),
     feel = val('c1', 'perasaan_bangun'),
@@ -1581,6 +1584,11 @@ function buildStory() {
     food = val('c3', 'cara_makan'),
     mirror = val('c3', 'cermin');
   s.push(sec('Tubuh yang Kurasakan sebagai Rumah', [body ? `Tubuhku terasa ${esc(body)}.` : '', fit ? `Aku berada pada kondisi fisik yang membuatku nyaman: ${esc(fit)}.` : '', sport ? `Aku menjaga tubuhku melalui ${esc(sport)}.` : '', food ? `Aku makan dengan cara ${esc(food)}.` : '', mirror ? `Saat melihat diriku di cermin, aku merasa ${esc(mirror)}.` : ''], 'c3'));
+  let care = val('c4', 'aku_banget'),
+    skin = val('c4', 'skincare'),
+    parfum = val('c4', 'parfum'),
+    guiltfree = val('c4', 'tidak_bersalah_beli');
+  s.push(sec('A Little Care, A Lot of Me', [skin ? `Rutinitas skincare-ku adalah ${esc(skin)}.` : '', parfum ? `Parfum yang aku pakai adalah ${esc(parfum)}.` : '', care ? `Hal kecil yang membuatku merasa \u201caku banget\u201d adalah ${esc(care)}.` : '', guiltfree ? `Aku tidak lagi merasa bersalah ketika ${esc(guiltfree)}.` : ''], 'c4'));
   let house = val('c5', 'rumah_seperti'),
     loc = val('c5', 'lokasi'),
     fav = val('c5', 'ruangan_favorit'),
@@ -1620,6 +1628,11 @@ function buildStory() {
     dest = val('c12', 'destinasi'),
     small = val('c12', 'tanpa_bersalah_kecil');
   s.push(sec('Hidup yang Boleh Dinikmati', [life ? `Aku mengizinkan diriku menikmati ${esc(life)}.` : '', travel ? `Aku pergi liburan ${esc(travel)}.` : '', dest ? `Beberapa tempat yang sering kudatangi adalah ${esc(dest)}.` : '', small ? `Kini aku dapat menikmati ${esc(small)} tanpa merasa bersalah.` : ''], 'c12'));
+  let people = val('c13', 'orang_sekitar'),
+    friends = val('c13', 'teman_seperti'),
+    environ = val('c13', 'lingkungan_seperti'),
+    inspire = val('c13', 'menginspirasi');
+  s.push(sec('Orang-Orang yang Membentukku', [people ? `Orang-orang di sekitarku adalah ${esc(people)}.` : '', friends ? `Aku punya teman yang ${esc(friends)}.` : '', environ ? `Aku berada di lingkungan yang ${esc(environ)}.` : '', inspire ? `Orang-orang yang menginspirasiku adalah ${esc(inspire)}.` : ''], 'c13'));
   let self = val('c14', 'diriku_5th'),
     traits = check('c14', 'sifat'),
     brave = val('c14', 'sudah_berani'),
@@ -1629,7 +1642,10 @@ function buildStory() {
     t,
     v: val('c15', 'time__' + t)
   })).filter(x => x.v);
-  if (timeline.length) s.push(`<section class="story-section"><h2 style="color:${CATS.find(c=>c.id==='c15').accent}">Satu Hari Selasa yang Biasa</h2>${timeline.map(x=>`<p><strong>${x.t}</strong> — ${esc(x.v)}</p>`).join('')}${customStory(CATS.find(c=>c.id==='c15'))}</section>`);
+  if (timeline.length) {
+    let timg = (state.data['c15'].images || []).slice(0, 6).map(i => `<img src="${i.src}">`).join('');
+    s.push(`<section class="story-section"><h2 style="color:${CATS.find(c=>c.id==='c15').accent}">Satu Hari Selasa yang Biasa</h2>${timeline.map(x=>`<p><strong>${x.t}</strong> — ${esc(x.v)}</p>`).join('')}${customStory(CATS.find(c=>c.id==='c15'))}${timg?`<div class="story-images">${timg}</div>`:''}</section>`);
+  }
   let feelday = val('c16', 'perasaan_hari'),
     free = val('c16', 'bebas_karena'),
     rich = val('c16', 'kaya_karena'),
